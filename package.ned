@@ -1,0 +1,3 @@
+package vlc;
+
+@license(LGPL);
