@@ -11,10 +11,10 @@
 
 void VLC::VLCmobilityManager::initialize() {
     this->channel = dynamic_cast<VLC::VLCchannel*>(cSimulation::getActiveSimulation()->getModuleByPath(VLC_CHANNEL_NAME));
+    this->channel->addMobility(gate("channelPort"));
 }
 
-void VLC::VLCmobilityManager::setTargetAngle(double alpha, double beta,
-        double angularSpeed) {
+void VLC::VLCmobilityManager::setTargetAngle(double alpha, double beta, double angularSpeed) {
 }
 
 void VLC::VLCmobilityManager::setNodePosition(double x, double y, double z, double alpha, double beta) {

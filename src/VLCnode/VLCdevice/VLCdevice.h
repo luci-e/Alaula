@@ -24,7 +24,6 @@ namespace VLC{
     class VLCdevice : public ::cSimpleModule{
 
         protected:
-            int nodeId;
             int deviceType;
             double semiAngle;
             VLCchannel* channel;
@@ -42,8 +41,9 @@ namespace VLC{
             VLCnodeDirection getNodeDirection();
 
             double getSemiAngle() const;
-            int getNodeId() const;
-};
+            void setSemiAngle(double semiAngle);
+    };
 }
+
 
 #endif /* VLCDEVICE_H_ */

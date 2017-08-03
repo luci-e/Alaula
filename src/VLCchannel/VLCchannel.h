@@ -45,13 +45,18 @@ namespace VLC{
         VLC::VLCdevViewInfo devsPerspective(VLCdevice* device1, VLCdevice* device2);
 
         // Adds a new device to the channel
-        void addDevice(int deviceId, VLCdevice* device);
+        void addDevice(int deviceId, VLCdevice* device, cGate* deviceGate);
+
+        // Adds a new mobility manager
+        void addMobility(cGate* mobilityGate);
 
         // Notifies the channel that the device has changed
         void notifyChange(int deviceId);
     };
+
+    Define_Module(VLCchannel);
+
 }
 
-Define_Module(VLC::VLCchannel);
 
 #endif /* VLCCHANNEL_H_ */

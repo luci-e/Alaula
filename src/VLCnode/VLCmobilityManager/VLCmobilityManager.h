@@ -38,8 +38,6 @@ namespace VLC {
             VLCnodeDirection nodeDirection;
 
             VLCnodePosition targetPosition;
-            double speed;
-            double angularSpeed;
 
             // The global VLCchannel
             VLCchannel* channel;

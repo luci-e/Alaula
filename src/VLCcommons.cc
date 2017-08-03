@@ -6,6 +6,8 @@
  */
 
 #include <VLCcommons.h>
+#include <random>
+
 
 namespace VLC{
     vector3d normalise(vector3d vector){
@@ -23,6 +25,24 @@ namespace VLC{
 
     double distance(VLCnodePosition pos1, VLCnodePosition pos2){
         return sqrt((pos1.x-pos2.x)*(pos1.x-pos2.x) + (pos1.y-pos2.y)*(pos1.y-pos2.y) + (pos1.z-pos2.z)*(pos1.z-pos2.z));
+    }
+
+    char* randomString( size_t length )
+    {
+        auto randchar = []() -> char
+        {
+            const char charset[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+            const size_t max_index = (sizeof(charset) - 1);
+            return charset[ rand() % max_index ];
+        };
+        char * str = new char[length+1];
+        for(int i = 0; i< length-2; i++){
+            str[i] = randchar();
+        }
+        return str;
     }
 }
 

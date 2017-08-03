@@ -9,7 +9,8 @@
 #define VLCCONSTS_H_
 
 #include <math.h>
-#define VLC_CHANNEL_NAME "VLCchannel"
+#include <string>
+#define VLC_CHANNEL_NAME "vlcChannel"
 
 namespace VLC{
     typedef struct VLCnodePosition{
@@ -38,6 +39,8 @@ namespace VLC{
     double dotProduct3d(vector3d v1, vector3d v2);
 
     double distance(VLCnodePosition pos1, VLCnodePosition pos2);
+
+    char* randomString( size_t length );
 }
 
 #endif /* VLCCONSTS_H_ */

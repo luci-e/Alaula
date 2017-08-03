@@ -13,25 +13,28 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef VLCLINEMOBILITYMANAGER_H_
-#define VLCLINEMOBILITYMANAGER_H_
+package vlc.src.VLCnode;
+import ned.IdealChannel;
+import vlc.src.VLCnode.VLCdevice.*;
+import vlc.src.VLCnode.VLCmobilityManager.*;
 
-#include <VLCmobilityManager.h>
+module VLCnode
+{
+    parameters:
+        string deviceType;
+        string deviceParameters;
 
-namespace VLC{
-    class VLClineMobilityManager : public VLC::VLCmobilityManager{
-        protected:
-            void initialize();
-            void handleMessage(cMessage* cMsg);
-
-        public:
-            VLClineMobilityManager();
-            ~VLClineMobilityManager();
-
-            void moveNode();
-            void rotateNode();
-    };
-    Define_Module(VLClineMobilityManager);
+        string mobilityType;
+        @display("bgb=269,129");
+    submodules:
+        device: <deviceType> like VLCdevice {
+            parameters:
+                devPars = deviceParameters;
+                @display("p=60,67");
+        }
+        mobilityManager: <mobilityType> like VLCmobilityManager {
+            @display("p=197,67");
+        }
+    connections:
+        device.mobilityPort --> IdealChannel --> mobilityManager.devicePort;
 }
-
-#endif /* VLCLINEMOBILITYMANAGER_H_ */

@@ -16,15 +16,10 @@ namespace VLC{
         public:
             VLCtransmitter(){};
             ~VLCtransmitter(){};
-
-            double getSemiAngle() const;
-            void setSemiAngle(double semiAngle);
-
     };
-
+    Define_Module(VLCtransmitter);
 }
 
-Define_Module(VLC::VLCtransmitter);
 
 void VLC::VLCtransmitter::initialize(){
     VLCdevice::initialize();
@@ -33,10 +28,5 @@ void VLC::VLCtransmitter::initialize(){
 
 void VLC::VLCtransmitter::handleMessage(cMessage *msg){};
 
-double VLC::VLCtransmitter::getSemiAngle() const {
-    return semiAngle;
-}
 
-void VLC::VLCtransmitter::setSemiAngle(double semiAngle) {
-    this->semiAngle = semiAngle;
-}
+

@@ -35,7 +35,6 @@ VLC::VLCnodePosition VLC::VLCdevice::getNodePosition(){
 
 void VLC::VLCdevice::initialize() {
     this->channel = dynamic_cast<VLC::VLCchannel*> (cSimulation::getActiveSimulation()->getModuleByPath(VLC_CHANNEL_NAME));
-    this->nodeId = this->getId();
 
     std::vector<double> devicePars = cStringTokenizer(par("devPars").stringValue()).asDoubleVector();
 
@@ -48,8 +47,12 @@ void VLC::VLCdevice::initialize() {
 
     // Set the semiangle of the device
     this->semiAngle = devicePars[5];
+    this->mobilityManager->setNodeId(this->getId());
 
-    this->mobilityManager->setNodeId(nodeId);
+    this->channel->addDevice(this->getId(), this, gate("channelPortOut"));
+    send(new cMessage("Hello"), gate("channelPortOut"));
+    ev<<"Connected to channel: "<<channel->getFullName()<<"\n";
+
 }
 
 VLC::VLCnodeDirection VLC::VLCdevice::getNodeDirection() {
@@ -60,6 +63,6 @@ double VLC::VLCdevice::getSemiAngle() const {
     return semiAngle;
 }
 
-int VLC::VLCdevice::getNodeId() const {
-    return nodeId;
+void VLC::VLCdevice::setSemiAngle(double semiAngle) {
+    this->semiAngle = semiAngle;
 }

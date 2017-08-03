@@ -15,5 +15,23 @@
 
 package vlc.nets;
 import ned.*;
+import vlc.src.VLCchannel.*;
+import vlc.src.VLCnode.*;
+
 
 @namespace(VLC);
+
+network VLCnetwork
+{
+    @display("bgb=605,383");
+    submodules:
+        vlcChannel: VLCchannel {
+            @display("p=298,322;b=574,61");
+        }
+        vlCnode: VLCnode {
+            @display("p=76,184;b=131,110");
+        }
+        vlCnode1: VLCnode {
+            @display("p=519,184;b=131,110");
+        }
+}

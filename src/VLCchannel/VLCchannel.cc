@@ -15,22 +15,28 @@
 
 #include <VLCchannel.h>
 #include <VLCdevice.h>
+#include <cgate.h>
+#include <cchannel.h>
 
-using namespace VLC;
 
-void VLCchannel::initialize(){};
-void VLCchannel::handleMessage(cMessage *msg){};
+void VLC::VLCchannel::initialize(){};
+void VLC::VLCchannel::handleMessage(cMessage *msg){};
 
-VLCchannel::VLCchannel() {
+VLC::VLCchannel::VLCchannel() {
     // TODO Auto-generated constructor stub
 
 }
 
-VLCchannel::~VLCchannel() {
+VLC::VLCchannel::~VLCchannel() {
     // TODO Auto-generated destructor stub
 }
 
-void VLCchannel::addDevice(int deviceId, VLC::VLCdevice* device) {
+void VLC::VLCchannel::addDevice(int deviceId, VLC::VLCdevice* device, cGate* deviceGate) {
+    this->VLCdevices.insert(this->VLCdevices.begin(), std::pair<int, VLCdevice*>(deviceId, device));
+    setGateSize("deviceIn", gateSize("deviceIn")+1);
+    cIdealChannel *c = cIdealChannel::create(VLC::randomString(16));
+    deviceGate->connectTo(gate("deviceIn", gateSize("deviceIn")-1), c);
+    c->callInitialize();
 }
 
 std::list<VLC::VLCdevViewInfo>* VLC::VLCchannel::devicesInFoVOf(int deviceId) {
@@ -68,8 +74,8 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
     double dev2FoV = device2->getSemiAngle();
 
     VLCdevViewInfo devsPer;
-    devsPer.device1 = device1->getNodeId();
-    devsPer.device2 = device2->getNodeId();
+    devsPer.device1 = device1->getId();
+    devsPer.device2 = device2->getId();
 
     devsPer.distance = distance(dev1Position, dev2Position);
 
@@ -98,5 +104,13 @@ void VLC::VLCchannel::createConnection(int transmitterId, int receiverId) {
 void VLC::VLCchannel::dropConnection(int transmitterId, int receiverId) {
 }
 
-void VLCchannel::notifyChange(int deviceId) {
+void VLC::VLCchannel::notifyChange(int deviceId) {
+}
+
+// Connect the VLCchannel to the mobility manager through an ideal channel
+void VLC::VLCchannel::addMobility(cGate* mobilityGate) {
+    setGateSize("mobilityPort", gateSize("mobilityPort")+1);
+    cIdealChannel *c = cIdealChannel::create(VLC::randomString(16));
+    mobilityGate->connectTo(gate("mobilityPort", gateSize("mobilityPort")-1), c);
+    c->callInitialize();
 }

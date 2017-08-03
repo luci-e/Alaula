@@ -13,25 +13,11 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef VLCLINEMOBILITYMANAGER_H_
-#define VLCLINEMOBILITYMANAGER_H_
+package vlc.src.VLCnode.VLCmobilityManager;
+@namespace(VLC);
 
-#include <VLCmobilityManager.h>
-
-namespace VLC{
-    class VLClineMobilityManager : public VLC::VLCmobilityManager{
-        protected:
-            void initialize();
-            void handleMessage(cMessage* cMsg);
-
-        public:
-            VLClineMobilityManager();
-            ~VLClineMobilityManager();
-
-            void moveNode();
-            void rotateNode();
-    };
-    Define_Module(VLClineMobilityManager);
+simple VLClineMobilityManager like VLCmobilityManager{
+    gates:
+        input devicePort;
+        output channelPort @loose;
 }
-
-#endif /* VLCLINEMOBILITYMANAGER_H_ */
