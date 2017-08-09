@@ -18,6 +18,5 @@ package vlc.src.VLCnode.VLCmobilityManager;
 
 moduleinterface VLCmobilityManager{
     gates:
-        input devicePort;
         output channelPort @loose;
 }

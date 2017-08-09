@@ -20,7 +20,5 @@ simple VLCreceiver like VLCdevice{
     parameters:
         string devPars;
     gates:
-        output mobilityPort;
-        input	channelPortIn[] @loose;
-        output  channelPortOut @loose;
+        inout channelPort @loose;
 }

@@ -19,7 +19,6 @@ package vlc.src.VLCchannel;
 
 simple VLCchannel{
     gates:
-		input deviceIn[] @loose;
-		output deviceOut[] @loose;
+		inout devicePort[] @loose;
 		input mobilityPort[] @loose;
 }

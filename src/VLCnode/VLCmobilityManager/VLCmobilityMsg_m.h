@@ -16,141 +16,41 @@
 
 
 /**
- * Class generated from <tt>src/VLCnode/VLCmobilityManager/VLCmobilityMsg.msg:17</tt> by nedtool.
+ * Class generated from <tt>src/VLCnode/VLCmobilityManager/VLCmobilityMsg.msg:19</tt> by nedtool.
  * <pre>
- * // A self message used to step the movement
- * message VLCupdateMovMsg
+ * //
+ * // TODO generated message class
+ * //
+ * message VLCmobilityMsg
  * {
- *     int type;
  * }
  * </pre>
  */
-class VLCupdateMovMsg : public ::cMessage
+class VLCmobilityMsg : public ::cMessage
 {
   protected:
-    int type_var;
 
   private:
-    void copy(const VLCupdateMovMsg& other);
+    void copy(const VLCmobilityMsg& other);
 
   protected:
     // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCupdateMovMsg&);
+    bool operator==(const VLCmobilityMsg&);
 
   public:
-    VLCupdateMovMsg(const char *name=NULL, int kind=0);
-    VLCupdateMovMsg(const VLCupdateMovMsg& other);
-    virtual ~VLCupdateMovMsg();
-    VLCupdateMovMsg& operator=(const VLCupdateMovMsg& other);
-    virtual VLCupdateMovMsg *dup() const {return new VLCupdateMovMsg(*this);}
+    VLCmobilityMsg(const char *name=NULL, int kind=0);
+    VLCmobilityMsg(const VLCmobilityMsg& other);
+    virtual ~VLCmobilityMsg();
+    VLCmobilityMsg& operator=(const VLCmobilityMsg& other);
+    virtual VLCmobilityMsg *dup() const {return new VLCmobilityMsg(*this);}
     virtual void parsimPack(cCommBuffer *b);
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getType() const;
-    virtual void setType(int type);
 };
 
-inline void doPacking(cCommBuffer *b, VLCupdateMovMsg& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCupdateMovMsg& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>src/VLCnode/VLCmobilityManager/VLCmobilityMsg.msg:22</tt> by nedtool.
- * <pre>
- * // A message sent by the VLCdevice to move it
- * message VLCmoveTargetMsg
- * {
- *     double x;
- *     double y;
- *     double z;
- *     double speed;
- * }
- * </pre>
- */
-class VLCmoveTargetMsg : public ::cMessage
-{
-  protected:
-    double x_var;
-    double y_var;
-    double z_var;
-    double speed_var;
-
-  private:
-    void copy(const VLCmoveTargetMsg& other);
-
-  protected:
-    // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCmoveTargetMsg&);
-
-  public:
-    VLCmoveTargetMsg(const char *name=NULL, int kind=0);
-    VLCmoveTargetMsg(const VLCmoveTargetMsg& other);
-    virtual ~VLCmoveTargetMsg();
-    VLCmoveTargetMsg& operator=(const VLCmoveTargetMsg& other);
-    virtual VLCmoveTargetMsg *dup() const {return new VLCmoveTargetMsg(*this);}
-    virtual void parsimPack(cCommBuffer *b);
-    virtual void parsimUnpack(cCommBuffer *b);
-
-    // field getter/setter methods
-    virtual double getX() const;
-    virtual void setX(double x);
-    virtual double getY() const;
-    virtual void setY(double y);
-    virtual double getZ() const;
-    virtual void setZ(double z);
-    virtual double getSpeed() const;
-    virtual void setSpeed(double speed);
-};
-
-inline void doPacking(cCommBuffer *b, VLCmoveTargetMsg& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCmoveTargetMsg& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>src/VLCnode/VLCmobilityManager/VLCmobilityMsg.msg:30</tt> by nedtool.
- * <pre>
- * // A message sent by the VLCdevice to rotate it
- * message VLCrotateTargetMsg
- * {
- *     double alpha;
- *     double beta;
- *     double speed;
- * }
- * </pre>
- */
-class VLCrotateTargetMsg : public ::cMessage
-{
-  protected:
-    double alpha_var;
-    double beta_var;
-    double speed_var;
-
-  private:
-    void copy(const VLCrotateTargetMsg& other);
-
-  protected:
-    // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCrotateTargetMsg&);
-
-  public:
-    VLCrotateTargetMsg(const char *name=NULL, int kind=0);
-    VLCrotateTargetMsg(const VLCrotateTargetMsg& other);
-    virtual ~VLCrotateTargetMsg();
-    VLCrotateTargetMsg& operator=(const VLCrotateTargetMsg& other);
-    virtual VLCrotateTargetMsg *dup() const {return new VLCrotateTargetMsg(*this);}
-    virtual void parsimPack(cCommBuffer *b);
-    virtual void parsimUnpack(cCommBuffer *b);
-
-    // field getter/setter methods
-    virtual double getAlpha() const;
-    virtual void setAlpha(double alpha);
-    virtual double getBeta() const;
-    virtual void setBeta(double beta);
-    virtual double getSpeed() const;
-    virtual void setSpeed(double speed);
-};
-
-inline void doPacking(cCommBuffer *b, VLCrotateTargetMsg& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCrotateTargetMsg& obj) {obj.parsimUnpack(b);}
+inline void doPacking(cCommBuffer *b, VLCmobilityMsg& obj) {obj.parsimPack(b);}
+inline void doUnpacking(cCommBuffer *b, VLCmobilityMsg& obj) {obj.parsimUnpack(b);}
 
 
 #endif // ifndef _VLCMOBILITYMSG_M_H_

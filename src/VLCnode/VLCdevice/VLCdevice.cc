@@ -26,7 +26,6 @@ VLC::VLCdevice::~VLCdevice() {
 
 VLC::VLCdevice::VLCdevice(){
     // TODO: type of mobility manager must be a parameter
-    this->mobilityManager = (VLCmobilityManager*) new VLClineMobilityManager();
 }
 
 VLC::VLCnodePosition VLC::VLCdevice::getNodePosition(){
@@ -34,6 +33,7 @@ VLC::VLCnodePosition VLC::VLCdevice::getNodePosition(){
 }
 
 void VLC::VLCdevice::initialize() {
+    this->mobilityManager = (VLCmobilityManager*) this->getParentModule()->getSubmodule("mobilityManager");
     this->channel = dynamic_cast<VLC::VLCchannel*> (cSimulation::getActiveSimulation()->getModuleByPath(VLC_CHANNEL_NAME));
 
     std::vector<double> devicePars = cStringTokenizer(par("devPars").stringValue()).asDoubleVector();
@@ -47,10 +47,10 @@ void VLC::VLCdevice::initialize() {
 
     // Set the semiangle of the device
     this->semiAngle = devicePars[5];
-    this->mobilityManager->setNodeId(this->getId());
+    this->mobilityManager->setDevice(this);
 
-    this->channel->addDevice(this->getId(), this, gate("channelPortOut"));
-    send(new cMessage("Hello"), gate("channelPortOut"));
+
+    this->channel->addDevice(this, gate("channelPort$i"), gate("channelPort$o"));
     ev<<"Connected to channel: "<<channel->getFullName()<<"\n";
 
 }

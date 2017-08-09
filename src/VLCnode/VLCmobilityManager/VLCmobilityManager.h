@@ -18,7 +18,6 @@
 
 #include <omnetpp.h>
 #include <csimulation.h>
-#include <VLCmobilityMsg_m.h>
 #include <VLCcommons.h>
 
 
@@ -33,7 +32,7 @@ namespace VLC {
 
     class VLCmobilityManager: public ::cSimpleModule {
         protected:
-            int nodeId;
+            VLCdevice * device;
             VLCnodePosition nodePosition;
             VLCnodeDirection nodeDirection;
 
@@ -52,17 +51,17 @@ namespace VLC {
 
         public:
             virtual void moveNode() = 0;
-            void setTargetCoordinates(double x, double y, double z, double speed);
+            void setTargetCoordinates(double x, double y, double z);
 
             virtual void rotateNode() = 0;
-            void setTargetAngle(double alpha, double beta, double angularSpeed);
+            void setTargetAngle(double alpha, double beta);
 
             void setNodePosition(VLCnodePosition nodePosition);
             void setNodePosition(double x, double y, double z, double alpha,
                     double beta);
 
             const VLCnodePosition getNodePosition() const;
-            void setNodeId(int nodeId);
+            void setDevice(VLCdevice * device);
 
             const VLCnodeDirection getNodeDirection() const;
     };

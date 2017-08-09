@@ -13,24 +13,7 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-// A self message used to step the movement
-message VLCupdateMovMsg{
-    int type;
-}
-
-// A message sent by the VLCdevice to move it
-message VLCmoveTargetMsg{
-    double x;
-    double y;
-    double z;
-    double speed;
-}
-
-// A message sent by the VLCdevice to rotate it
-message VLCrotateTargetMsg{
-    double alpha;
-    double beta;
-    double speed;
-}
-
-
+//
+// TODO generated message class
+//
+message VLCmobilityMsg {}

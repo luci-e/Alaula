@@ -32,6 +32,9 @@ network VLCnetwork
             @display("p=76,184;b=131,110");
         }
         vlCnode1: VLCnode {
+            @display("p=297,184;b=131,110");
+        }
+        vlCnode2: VLCnode {
             @display("p=519,184;b=131,110");
         }
 }

@@ -13,28 +13,24 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-// A move message indicates that either the tx or rx has altered 
-// its position or orientation in space.
-
-message VLCmoveMsg{
-    int nodeId;
-    // The position of the node given in meters
-    double x;
-    double y;
-    double z;
-    
-    // The angles on the xy and xz planes. We ignore the roll
-    double alpha;
-    double beta;
+message VLCchannelMsg{
+    int messageType;
 }
 
-message VLCchannelSignalBegin{
-	int nodeId;
+
+// A move message indicates that either the tx or rx has altered 
+// its position or orientation in space.
+message VLCmoveMsg extends VLCchannelMsg{
+    int nodeId;
+}
+
+message VLCchannelSignalBegin extends VLCchannelMsg{
+	int transmitterNodeId;
 	double power;
 	double carrierFreq;
 	int modulationType;
 }
 
-message VLCchannelSignalEnd{
-    int nodeId;
+message VLCchannelSignalEnd extends VLCchannelMsg{
+    int transmitterNodeId;
 }

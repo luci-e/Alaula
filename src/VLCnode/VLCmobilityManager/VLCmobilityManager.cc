@@ -6,6 +6,7 @@
  */
 
 #include <VLCmobilityManager.h>
+#include <VLCmobilityMsg_m.h>
 #include <VLCchannel.h>
 #include <math.h>
 
@@ -14,7 +15,7 @@ void VLC::VLCmobilityManager::initialize() {
     this->channel->addMobility(gate("channelPort"));
 }
 
-void VLC::VLCmobilityManager::setTargetAngle(double alpha, double beta, double angularSpeed) {
+void VLC::VLCmobilityManager::setTargetAngle(double alpha, double beta) {
 }
 
 void VLC::VLCmobilityManager::setNodePosition(double x, double y, double z, double alpha, double beta) {
@@ -42,22 +43,17 @@ void VLC::VLCmobilityManager::calculateDirection() {
     double beta = this->nodePosition.beta;
 
     this->nodeDirection = {
-            cos(beta)*sin(alpha),
-            cos(beta)*cos(alpha),
-            sin(beta)
+            sin(beta)*cos(alpha),
+            sin(beta)*sin(alpha),
+            cos(beta)
     };
 }
 
 // Updates the target coordinates and start the translation
-void VLC::VLCmobilityManager::setTargetCoordinates(double x, double y, double z,
-        double speed) {
+void VLC::VLCmobilityManager::setTargetCoordinates(double x, double y, double z) {
     this->targetPosition = {x, y, z, this->targetPosition.alpha, this->targetPosition.beta};
-    this->speed = speed;
-    VLCupdateMovMsg* movMsg = new VLCupdateMovMsg();
-    movMsg->setType(STEP_TRANSLATION);
-    this->scheduleAt(simTime(), movMsg);
 }
 
-void VLC::VLCmobilityManager::setNodeId(int nodeId) {
-    this->nodeId = nodeId;
+void VLC::VLCmobilityManager::setDevice(VLCdevice * device) {
+    this->device = device;
 }

@@ -6,6 +6,7 @@
  */
 
 #include <VLCdevice.h>
+#include <VLCchannelMsg_m.h>
 
 namespace VLC{
     class VLCtransmitter : public VLCdevice{
@@ -24,9 +25,20 @@ namespace VLC{
 void VLC::VLCtransmitter::initialize(){
     VLCdevice::initialize();
     this->deviceType = TRANSMITTER_DEVICE;
+    scheduleAt(simTime() + 1000, new cMessage());
 }
 
-void VLC::VLCtransmitter::handleMessage(cMessage *msg){};
+void VLC::VLCtransmitter::handleMessage(cMessage *msg){
+    ev<<"Sending channel message\n";
+    VLCchannelSignalBegin *csb = new VLCchannelSignalBegin();
+    csb->setMessageType(CH_BEGIN_COMM_MSG);
+    csb->setTransmitterNodeId(this->getId());
+    csb->setPower(0.0);
+    csb->setCarrierFreq(0.0);
+    csb->setModulationType(0);
+    send(csb, "channelPort$o");
+    delete msg;
+};
 
 
 

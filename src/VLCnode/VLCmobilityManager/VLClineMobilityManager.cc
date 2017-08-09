@@ -30,6 +30,7 @@
 
 #include <VLClineMobilityManager.h>
 #include <VLCmobilityManager.h>
+#include <VLCmobilityMsg_m.h>
 
 VLC::VLClineMobilityManager::VLClineMobilityManager() {
 }
@@ -43,20 +44,9 @@ void VLC::VLClineMobilityManager::initialize() {
 }
 
 void VLC::VLClineMobilityManager::handleMessage(cMessage* cMsg){
-    if (cMsg->isSelfMessage()) {
-        VLCupdateMovMsg* movMsg = dynamic_cast<VLCupdateMovMsg*>(cMsg);
-        switch (movMsg->getType()) {
-        case STEP_TRANSLATION:
-            break;
-        case STEP_ROTATION:
-            break;
-        }
-    } else {
-
-    }
     delete cMsg;
 }
-;
+
 
 void VLC::VLClineMobilityManager::moveNode() {
 }
@@ -64,4 +54,3 @@ void VLC::VLClineMobilityManager::moveNode() {
 
 void VLC::VLClineMobilityManager::rotateNode() {
 }
-

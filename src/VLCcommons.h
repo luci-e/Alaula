@@ -12,16 +12,25 @@
 #include <string>
 #define VLC_CHANNEL_NAME "vlcChannel"
 
+// Constants for messages to channel identification
+#define CH_MOVE_MSG 0
+#define CH_BEGIN_COMM_MSG 1
+#define CH_END_COMM_MSG 2
+
 namespace VLC{
     typedef struct VLCnodePosition{
         double x, y, z;
         double alpha, beta;
     }VLCnodePosition;
 
+    void printPosition(VLCnodePosition np);
+
 
     typedef struct vector3d{
         double x, y, z;
     }vector3d;
+
+    void printVector(vector3d v);
 
     typedef vector3d VLCnodeDirection;
 
@@ -31,6 +40,11 @@ namespace VLC{
         double distance;
         double angle1, angle2;
     }VLCdevViewInfo;
+
+    typedef struct VLCtimeSINR{
+        double time;
+        double SINR;
+    }VLCtimeSINR;
 
     vector3d normalise(vector3d vector);
 

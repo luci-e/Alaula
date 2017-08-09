@@ -30,7 +30,7 @@ namespace VLC{
             VLCmobilityManager* mobilityManager;
 
             void initialize();
-            void handleMessage(cMessage *msg){};
+            virtual void handleMessage(cMessage *msg) = 0;
 
 
         public:

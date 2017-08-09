@@ -17,7 +17,11 @@
 #define VLCCHANNEL_H_
 
 #include <omnetpp.h>
+#include <VLCconnection.h>
 #include <VLCcommons.h>
+#include <csimulation.h>
+#include <cchannel.h>
+
 
 namespace VLC{
     // Forward declarations
@@ -26,16 +30,28 @@ namespace VLC{
     class VLCchannel : public ::cSimpleModule{
 
     protected:
-        std::map <int, VLCdevice*> VLCdevices;
+        cSimulation * sim = cSimulation::getActiveSimulation();
+
+        std::list <VLC::VLCdevice*> VLCdevices;
+        std::list <VLC::VLCconnection> VLCconnections;
+        std::map <VLC::VLCdevice*, int> VLCdeviceGates;
+
+
 
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
 
         // Get the list of devices in the Field of View of the given device
-        std::list <VLCdevViewInfo>* devicesInFoVOf( int deviceId );
+        std::list <VLCdevViewInfo>* devicesInFoVOf( VLC::VLCdevice * device );
 
-        void createConnection(int transmitterId, int receiverId);
-        void dropConnection(int transmitterId, int receiverId);
+        void updateChannel();
+
+        void startTransmission(VLCdevice * transmitter);
+        void endTransmission(VLCdevice* transmitter);
+
+        VLC::VLCconnection* connectionExists(VLCdevice * transmitter, VLCdevice * receiver);
+        int createConnection(VLCdevice * transmitter, VLCdevice * receiver);
+        int dropConnection(VLCdevice * transmitter, VLCdevice * receiver);
 
 
     public:
@@ -45,13 +61,13 @@ namespace VLC{
         VLC::VLCdevViewInfo devsPerspective(VLCdevice* device1, VLCdevice* device2);
 
         // Adds a new device to the channel
-        void addDevice(int deviceId, VLCdevice* device, cGate* deviceGate);
+        void addDevice(VLCdevice* device, cGate *deviceGateIn, cGate *deviceGateOut);
 
         // Adds a new mobility manager
         void addMobility(cGate* mobilityGate);
 
         // Notifies the channel that the device has changed
-        void notifyChange(int deviceId);
+        void notifyChange(VLCdevice * device);
     };
 
     Define_Module(VLCchannel);

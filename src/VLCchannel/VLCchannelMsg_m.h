@@ -16,31 +16,58 @@
 
 
 /**
- * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:19</tt> by nedtool.
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:16</tt> by nedtool.
  * <pre>
- * message VLCmoveMsg
+ * message VLCchannelMsg
  * {
- *     int nodeId;
- *     // The position of the node given in meters
- *     double x;
- *     double y;
- *     double z;
- * 
- *     // The angles on the xy and xz planes. We ignore the roll
- *     double alpha;
- *     double beta;
+ *     int messageType;
  * }
  * </pre>
  */
-class VLCmoveMsg : public ::cMessage
+class VLCchannelMsg : public ::cMessage
+{
+  protected:
+    int messageType_var;
+
+  private:
+    void copy(const VLCchannelMsg& other);
+
+  protected:
+    // protected and unimplemented operator==(), to prevent accidental usage
+    bool operator==(const VLCchannelMsg&);
+
+  public:
+    VLCchannelMsg(const char *name=NULL, int kind=0);
+    VLCchannelMsg(const VLCchannelMsg& other);
+    virtual ~VLCchannelMsg();
+    VLCchannelMsg& operator=(const VLCchannelMsg& other);
+    virtual VLCchannelMsg *dup() const {return new VLCchannelMsg(*this);}
+    virtual void parsimPack(cCommBuffer *b);
+    virtual void parsimUnpack(cCommBuffer *b);
+
+    // field getter/setter methods
+    virtual int getMessageType() const;
+    virtual void setMessageType(int messageType);
+};
+
+inline void doPacking(cCommBuffer *b, VLCchannelMsg& obj) {obj.parsimPack(b);}
+inline void doUnpacking(cCommBuffer *b, VLCchannelMsg& obj) {obj.parsimUnpack(b);}
+
+/**
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:23</tt> by nedtool.
+ * <pre>
+ * // A move message indicates that either the tx or rx has altered 
+ * // its position or orientation in space.
+ * message VLCmoveMsg extends VLCchannelMsg
+ * {
+ *     int nodeId;
+ * }
+ * </pre>
+ */
+class VLCmoveMsg : public ::VLCchannelMsg
 {
   protected:
     int nodeId_var;
-    double x_var;
-    double y_var;
-    double z_var;
-    double alpha_var;
-    double beta_var;
 
   private:
     void copy(const VLCmoveMsg& other);
@@ -61,37 +88,27 @@ class VLCmoveMsg : public ::cMessage
     // field getter/setter methods
     virtual int getNodeId() const;
     virtual void setNodeId(int nodeId);
-    virtual double getX() const;
-    virtual void setX(double x);
-    virtual double getY() const;
-    virtual void setY(double y);
-    virtual double getZ() const;
-    virtual void setZ(double z);
-    virtual double getAlpha() const;
-    virtual void setAlpha(double alpha);
-    virtual double getBeta() const;
-    virtual void setBeta(double beta);
 };
 
 inline void doPacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:31</tt> by nedtool.
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:27</tt> by nedtool.
  * <pre>
- * message VLCchannelSignalBegin
+ * message VLCchannelSignalBegin extends VLCchannelMsg
  * {
- *     int nodeId;
+ *     int transmitterNodeId;
  *     double power;
  *     double carrierFreq;
  *     int modulationType;
  * }
  * </pre>
  */
-class VLCchannelSignalBegin : public ::cMessage
+class VLCchannelSignalBegin : public ::VLCchannelMsg
 {
   protected:
-    int nodeId_var;
+    int transmitterNodeId_var;
     double power_var;
     double carrierFreq_var;
     int modulationType_var;
@@ -113,8 +130,8 @@ class VLCchannelSignalBegin : public ::cMessage
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
+    virtual int getTransmitterNodeId() const;
+    virtual void setTransmitterNodeId(int transmitterNodeId);
     virtual double getPower() const;
     virtual void setPower(double power);
     virtual double getCarrierFreq() const;
@@ -127,18 +144,18 @@ inline void doPacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimPac
 inline void doUnpacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:38</tt> by nedtool.
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:34</tt> by nedtool.
  * <pre>
- * message VLCchannelSignalEnd
+ * message VLCchannelSignalEnd extends VLCchannelMsg
  * {
- *     int nodeId;
+ *     int transmitterNodeId;
  * }
  * </pre>
  */
-class VLCchannelSignalEnd : public ::cMessage
+class VLCchannelSignalEnd : public ::VLCchannelMsg
 {
   protected:
-    int nodeId_var;
+    int transmitterNodeId_var;
 
   private:
     void copy(const VLCchannelSignalEnd& other);
@@ -157,8 +174,8 @@ class VLCchannelSignalEnd : public ::cMessage
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
+    virtual int getTransmitterNodeId() const;
+    virtual void setTransmitterNodeId(int transmitterNodeId);
 };
 
 inline void doPacking(cCommBuffer *b, VLCchannelSignalEnd& obj) {obj.parsimPack(b);}

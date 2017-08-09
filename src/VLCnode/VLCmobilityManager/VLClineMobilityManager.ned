@@ -18,6 +18,5 @@ package vlc.src.VLCnode.VLCmobilityManager;
 
 simple VLClineMobilityManager like VLCmobilityManager{
     gates:
-        input devicePort;
         output channelPort @loose;
 }

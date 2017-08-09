@@ -7,16 +7,25 @@
 
 #include <VLCcommons.h>
 #include <random>
+#include <omnetpp.h>
 
 
 namespace VLC{
+    void printPosition(VLCnodePosition np){
+        ev<<"X: "<<np.x<<" Y: "<<np.y<<" Z: "<<np.z<<" Alpha: "<<np.alpha<<" Beta: "<<np.beta<<"\n";
+    }
+
+    void printVector(vector3d v){
+        ev<<"X: "<<v.x<<" Y: "<<v.y<<" Z: "<<v.z<<"\n";
+    }
+
     vector3d normalise(vector3d vector){
         double norm = sqrt( vector.x*vector.x + vector.y*vector.y + vector.z*vector.z);
         return {vector.x / norm, vector.y /norm, vector.z /norm};
     }
 
     vector3d opposite(vector3d vector){
-        return {-vector.x, -vector.y, -vector.y};
+        return {-vector.x, -vector.y, -vector.z};
     }
 
     double dotProduct3d(vector3d v1, vector3d v2){

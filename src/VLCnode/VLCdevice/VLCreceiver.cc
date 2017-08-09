@@ -30,4 +30,7 @@ void VLC::VLCreceiver::initialize(){
     this->deviceType = RECEIVER_DEVICE;
 }
 
-void VLC::VLCreceiver::handleMessage(cMessage *msg){};
+void VLC::VLCreceiver::handleMessage(cMessage *msg){
+    ev<<"Received a message from the VLCchannel\n";
+    delete msg;
+};
