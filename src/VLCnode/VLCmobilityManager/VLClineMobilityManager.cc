@@ -30,6 +30,7 @@
 
 #include <VLClineMobilityManager.h>
 #include <VLCmobilityManager.h>
+#include <VLCchannel.h>
 #include <VLCmobilityMsg_m.h>
 
 VLC::VLClineMobilityManager::VLClineMobilityManager() {
@@ -49,6 +50,10 @@ void VLC::VLClineMobilityManager::handleMessage(cMessage* cMsg){
 
 
 void VLC::VLClineMobilityManager::moveNode() {
+    VLCnodePosition newPos = this->nodePosition;
+    newPos.beta = 0;
+    this->setNodePosition(newPos);
+    this->channel->notifyChange(this->device);
 }
 
 

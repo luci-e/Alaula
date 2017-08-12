@@ -20,12 +20,13 @@
 #include <VLCchannelMsg_m.h>
 #include <VLCconnection.h>
 #include <list>
+#include <set>
+#include <algorithm>
 
 
 void VLC::VLCchannel::initialize(){};
 
 void VLC::VLCchannel::handleMessage(cMessage *msg){
-    ev<<"Message received\n";
     if(msg->isSelfMessage()){
 
     }else{
@@ -58,7 +59,7 @@ VLC::VLCchannel::VLCchannel() {}
 VLC::VLCchannel::~VLCchannel() {}
 
 void VLC::VLCchannel::addDevice(VLCdevice* device, cGate *deviceGateIn, cGate *deviceGateOut) {
-    this->VLCdevices.push_back(device);
+    this->VLCdevices.insert(device);
     int newGateVSize = gateSize("devicePort")+1;
 
     setGateSize("devicePort", newGateVSize);
@@ -72,17 +73,20 @@ void VLC::VLCchannel::addDevice(VLCdevice* device, cGate *deviceGateIn, cGate *d
     channelIn->callInitialize();
     channelOut->callInitialize();
 
+    this->VLCcurrentViews[device] = this->devicesInFoVOf(device);
+    this->notifyChange(device);
+
     VLCdeviceGates[device] = newGateVSize-1;
 }
 
-std::list<VLC::VLCdevViewInfo>* VLC::VLCchannel::devicesInFoVOf(VLC::VLCdevice* device) {
-    std::list <VLC::VLCdevViewInfo> *deviceList = new std::list<VLC::VLCdevViewInfo>();
+std::set<VLC::VLCdevViewInfo>* VLC::VLCchannel::devicesInFoVOf(VLC::VLCdevice* device) {
+    std::set<VLCdevViewInfo> *deviceList = new std::set<VLCdevViewInfo>();
 
     for( auto& currentDevice : this->VLCdevices ){
         if(device != currentDevice){
             VLCdevViewInfo dvi = devsPerspective(device, currentDevice);
             if( dvi.seeEachOther){
-                deviceList->push_back(dvi);
+                deviceList->insert(dvi);
             }
 
         }
@@ -153,9 +157,9 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
 
 int VLC::VLCchannel::createConnection(VLCdevice * transmitter, VLCdevice * receiver) {
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
-    if( conn ){
+    if( !conn ){
         VLC::VLCconnection newConn(transmitter, receiver);
-        this->VLCconnections.push_back(newConn);
+        this->VLCconnections.insert(newConn);
         return 0;
     }
     return -1;
@@ -164,47 +168,116 @@ int VLC::VLCchannel::createConnection(VLCdevice * transmitter, VLCdevice * recei
 int VLC::VLCchannel::dropConnection(VLCdevice * transmitter, VLCdevice * receiver) {
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
     if(conn){
-        this->VLCconnections.remove((*conn));
+        this->VLCconnections.erase((*conn));
+        return 0;
+    }
+    return -1;
+}
+
+int VLC::VLCchannel::abortConnection(VLCdevice* transmitter, VLCdevice* receiver) {
+    VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
+    if(conn){
+        conn->abortConnection();
+        this->VLCconnections.erase(*conn);
+        ev<<"Erased the connection\n";
         return 0;
     }
     return -1;
 }
 
 VLC::VLCconnection* VLC::VLCchannel::connectionExists(VLCdevice * transmitter, VLCdevice * receiver) {
-    for (std::list<VLCconnection>::iterator conn= this->VLCconnections.begin(); conn!=this->VLCconnections.end(); conn++){
-      if( (*conn).transmitter == transmitter && (*conn).receiver == receiver){
-          return std::addressof(*conn);
-      }
+    VLCconnection toFind(transmitter, receiver);
+    std::set <VLC::VLCconnection, VLC::VLCconnection::comparator>::iterator conn = this->VLCconnections.find(toFind);
+    if( conn != this->VLCconnections.end()){
+        return const_cast<VLCconnection*>(&(*conn));
     }
     return NULL;
 }
 
 void VLC::VLCchannel::startTransmission(VLCdevice* transmitter) {
-    std::list<VLCdevViewInfo> * receiversInFoV = this->devicesInFoVOf(transmitter);
-    for( std::list<VLCdevViewInfo>::iterator receiverIt = receiversInFoV->begin(); receiverIt != receiversInFoV->end(); receiverIt++){
+    std::set<VLCdevViewInfo> * receiversInFoV = this->devicesInFoVOf(transmitter);
+    for( std::set<VLCdevViewInfo>::iterator receiverIt = receiversInFoV->begin(); receiverIt != receiversInFoV->end(); receiverIt++){
         VLCdevice * receiver = (VLCdevice*) this->sim->getModule((*receiverIt).device2);
-        this->createConnection(transmitter, receiver);
-        ev<<"created connection between "<<transmitter->getId()<<" and "<<receiver->getId()<<"\n";
+        if( receiver->getDeviceType() == RECEIVER_DEVICE){
+            this->createConnection(transmitter, receiver);
+            ev<<"created connection between "<<transmitter->getId()<<" and "<<receiver->getId()<<"\n";
+        }
     }
 }
 
 void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
-    for( std::list<VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end(); conn++){
+    for( std::set <VLC::VLCconnection, VLC::VLCconnection::comparator>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end(); conn++){
         VLCconnection c = *conn;
+        ev<<"Ze transmitter is "<<c.transmitter<<"\n";
         if(c.transmitter == transmitter){
             if( c.getOutcome() ){
-                cGate * receiverGate = gate("channelPort$o", this->VLCdeviceGates[const_cast<VLCdevice*>(c.receiver)]);
+                ev<<"Sending message back to ze devise\n";
+                cGate * receiverGate = gate("devicePort$o", this->VLCdeviceGates[const_cast<VLCdevice*>(c.receiver)]);
                 send(new cMessage(), receiverGate);
             }
+
+            this->VLCconnections.erase(c);
         }
     }
 }
 
 void VLC::VLCchannel::updateChannel(){
-
+    for( std::set<VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end(); conn++){
+        VLCconnection c = *conn;
+        // Calculate the SINR between the devices in the connection
+        // Update the connection by adding a new value to the SINRtrend
+    }
 }
 
+
+
 void VLC::VLCchannel::notifyChange(VLCdevice * device) {
+    std::set<VLCdevViewInfo> *newView = this->devicesInFoVOf(device);
+    std::set<VLCdevViewInfo> *oldView = this->VLCcurrentViews[device];
+
+    // Get the devices that have come into the FoV of the device
+    std::set<VLCdevViewInfo> newDevices;
+    std::set_difference(newView->begin(), newView->end(), oldView->begin(), oldView->end(),  std::inserter(newDevices, newDevices.begin()) );
+
+    // Get the devices that went of the FoV of the device
+    std::set<VLCdevViewInfo> outDevices;
+    std::set_difference(oldView->begin(), oldView->end(), newView->begin(), newView->end(), std::inserter(outDevices, outDevices.begin()) );
+
+    if( device->getDeviceType() == TRANSMITTER_DEVICE ){
+        for(std::set<VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end();){
+            if( conn->transmitter == device){
+                conn->abortConnection();
+                ev<<this->VLCconnections.size()<<" connections on the net you take one down pass it around";
+                this->VLCconnections.erase(conn++);
+                ev<<this->VLCconnections.size()<<" connections on the net\n";
+            }else{
+                conn++;
+            }
+        }
+    }else if(device->getDeviceType() == RECEIVER_DEVICE){
+        for(std::set<VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end();){
+            if( conn->receiver == device){
+                conn->abortConnection();
+                ev<<this->VLCconnections.size()<<" connections on the net you take one down pass it around";
+                this->VLCconnections.erase(conn++);
+                ev<<this->VLCconnections.size()<<" connections on the net\n";
+            }else{
+                conn++;
+            }
+        }
+    }
+
+    for( std::set<VLCdevViewInfo>::iterator newDevs = newDevices.begin(); newDevs != newDevices.end(); newDevs++){
+        this->VLCcurrentViews[(VLCdevice*) this->sim->getModule(newDevs->device2)]->insert(invertedView(*newDevs));
+    }
+
+    for( std::set<VLCdevViewInfo>::iterator outDevs = outDevices.begin(); outDevs != outDevices.end(); outDevs++){
+        this->VLCcurrentViews[(VLCdevice*) this->sim->getModule(outDevs->device2)]->erase(invertedView(*outDevs));
+    }
+
+    delete this->VLCcurrentViews[device];
+    this->VLCcurrentViews[device] = newView;
+    this->updateChannel();
 }
 
 // Connect the VLCchannel to the mobility manager through an ideal channel

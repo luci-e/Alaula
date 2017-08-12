@@ -29,4 +29,8 @@ bool VLCconnection::getOutcome() {
     return true;
 }
 
+void VLCconnection::abortConnection() const{
+    ev<<"oh noes!\n";
+}
+
 } /* namespace VLC */

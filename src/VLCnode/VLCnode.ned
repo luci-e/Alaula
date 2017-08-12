@@ -26,16 +26,18 @@ module VLCnode
 
         string mobilityType;
         @display("bgb=269,129");
+
     submodules:
         mobilityManager: <mobilityType> like VLCmobilityManager {
             @display("p=197,67");
         }
-        
+
         device: <deviceType> like VLCdevice {
             parameters:
                 devPars = deviceParameters;
                 @display("p=60,67");
         }
 
-    connections:
+
+
 }

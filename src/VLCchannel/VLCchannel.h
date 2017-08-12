@@ -32,9 +32,10 @@ namespace VLC{
     protected:
         cSimulation * sim = cSimulation::getActiveSimulation();
 
-        std::list <VLC::VLCdevice*> VLCdevices;
-        std::list <VLC::VLCconnection> VLCconnections;
+        std::set <VLC::VLCdevice*> VLCdevices;
+        std::set <VLC::VLCconnection, VLC::VLCconnection::comparator> VLCconnections;
         std::map <VLC::VLCdevice*, int> VLCdeviceGates;
+        std::map <VLC::VLCdevice*, std::set<VLCdevViewInfo> *> VLCcurrentViews;
 
 
 
@@ -42,7 +43,7 @@ namespace VLC{
         virtual void handleMessage(cMessage *msg);
 
         // Get the list of devices in the Field of View of the given device
-        std::list <VLCdevViewInfo>* devicesInFoVOf( VLC::VLCdevice * device );
+        std::set<VLCdevViewInfo>* devicesInFoVOf( VLC::VLCdevice * device );
 
         void updateChannel();
 
@@ -52,6 +53,7 @@ namespace VLC{
         VLC::VLCconnection* connectionExists(VLCdevice * transmitter, VLCdevice * receiver);
         int createConnection(VLCdevice * transmitter, VLCdevice * receiver);
         int dropConnection(VLCdevice * transmitter, VLCdevice * receiver);
+        int abortConnection(VLCdevice * transmitter, VLCdevice * receiver);
 
 
     public:
@@ -76,3 +78,4 @@ namespace VLC{
 
 
 #endif /* VLCCHANNEL_H_ */
+

@@ -42,7 +42,8 @@ namespace VLC{
 
             double getSemiAngle() const;
             void setSemiAngle(double semiAngle);
-    };
+            int getDeviceType() const;
+};
 }
 
 

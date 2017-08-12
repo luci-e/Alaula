@@ -34,12 +34,53 @@ namespace VLC{
 
     typedef vector3d VLCnodeDirection;
 
-    typedef struct VLCdevViewInfo{
+    struct VLCdevViewInfo{
         int device1, device2;
         bool seeEachOther;
         double distance;
         double angle1, angle2;
-    }VLCdevViewInfo;
+
+        inline bool operator()(const VLCdevViewInfo& vi1, const VLCdevViewInfo& vi2) const{
+            if( vi1.device1 < vi2.device1 ){
+                return true;
+            }
+
+            if( vi1.device1 == vi2.device1 ){
+                return vi1.device2 < vi2.device2;
+            }
+
+            return false;
+        }
+
+        inline bool operator<(const VLCdevViewInfo& vi2) const{
+            if( device1 < vi2.device1 ){
+                return true;
+            }
+
+            if( device1 == vi2.device1 ){
+                return device2 < vi2.device2;
+            }
+
+            return false;
+        }
+
+        inline bool operator==(const VLCdevViewInfo& vi2) const{
+            return (device1 == vi2.device1) && (device2 == vi2.device2);
+        }
+
+        inline VLCdevViewInfo& operator=(const VLC::VLCdevViewInfo& other){
+            device1 = other.device1;
+            device2 = other.device2;
+            seeEachOther = other.seeEachOther;
+            distance = other.distance;
+            angle1 = other.angle1;
+            angle2 = other.angle2;
+
+            return *this;
+        }
+    };
+
+    VLCdevViewInfo invertedView( VLCdevViewInfo view);
 
     typedef struct VLCtimeSINR{
         double time;

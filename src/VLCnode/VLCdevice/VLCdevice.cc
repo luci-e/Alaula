@@ -66,3 +66,7 @@ double VLC::VLCdevice::getSemiAngle() const {
 void VLC::VLCdevice::setSemiAngle(double semiAngle) {
     this->semiAngle = semiAngle;
 }
+
+int VLC::VLCdevice::getDeviceType() const {
+    return deviceType;
+}

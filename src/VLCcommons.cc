@@ -11,6 +11,10 @@
 
 
 namespace VLC{
+    VLCdevViewInfo invertedView( VLCdevViewInfo view){
+        return {view.device2, view.device1, view.seeEachOther, view.distance, view.angle2, view.angle1};
+    }
+
     void printPosition(VLCnodePosition np){
         ev<<"X: "<<np.x<<" Y: "<<np.y<<" Z: "<<np.z<<" Alpha: "<<np.alpha<<" Beta: "<<np.beta<<"\n";
     }

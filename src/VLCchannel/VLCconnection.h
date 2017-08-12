@@ -26,6 +26,22 @@ public:
 
     void addValue(VLC::VLCtimeSINR ts);
     bool getOutcome();
+
+    void abortConnection() const;
+
+    struct comparator{
+        bool operator()(const VLCconnection& c1, const VLCconnection& c2){
+            if(c1.transmitter->getId() < c2.transmitter->getId()){
+                return true;
+            }
+
+            if(c1.transmitter->getId() == c2.transmitter->getId()){
+                return c1.receiver->getId() < c2.receiver->getId();
+            }
+
+            return false;
+        }
+    };
 };
 
 } /* namespace VLC */
