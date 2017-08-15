@@ -1,5 +1,5 @@
 /*
- * VLCmobilityManager.cpp
+ * VLCmobilityManager.cc
  *
  *  Created on: Jul 31, 2017
  *      Author: casper
@@ -37,7 +37,7 @@ const VLC::VLCnodeDirection  VLC::VLCmobilityManager::getNodeDirection() const {
     return this->nodeDirection;
 }
 
-// Calculate the normalised vector
+// Calculates the versor of the device
 void VLC::VLCmobilityManager::calculateDirection() {
     double alpha = this->nodePosition.alpha;
     double beta = this->nodePosition.beta;

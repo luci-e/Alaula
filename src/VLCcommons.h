@@ -80,6 +80,7 @@ namespace VLC{
         }
     };
 
+    // Inverts the given view, that is, device1 swaps with 2, angle1 swaps with 2
     VLCdevViewInfo invertedView( VLCdevViewInfo view);
 
     typedef struct VLCtimeSINR{
@@ -87,14 +88,19 @@ namespace VLC{
         double SINR;
     }VLCtimeSINR;
 
+    // Normalise the vector
     vector3d normalise(vector3d vector);
 
+    // Returns the opposite of the given vector
     vector3d opposite(vector3d vector);
 
+    // Returns the value of the dot product between the 2 vectors
     double dotProduct3d(vector3d v1, vector3d v2);
 
+    // Returns the distance between the to nodes
     double distance(VLCnodePosition pos1, VLCnodePosition pos2);
 
+    // Generates a random string of length length
     char* randomString( size_t length );
 }
 

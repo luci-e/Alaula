@@ -32,10 +32,14 @@ namespace VLC {
 
     class VLCmobilityManager: public ::cSimpleModule {
         protected:
+            // The device that this moblityManager manages
             VLCdevice * device;
+            // The current nodePosition
             VLCnodePosition nodePosition;
+            // The current node direction
             VLCnodeDirection nodeDirection;
 
+            // The target position at which the node will arrive at the end of the movement
             VLCnodePosition targetPosition;
 
             // The global VLCchannel
@@ -44,6 +48,7 @@ namespace VLC {
             // The time tick the position gets updated in ms
             double updateInterval = 100;
 
+            // Calculates the versor of the device
             void calculateDirection();
 
             void initialize();
@@ -63,6 +68,7 @@ namespace VLC {
             const VLCnodePosition getNodePosition() const;
             void setDevice(VLCdevice * device);
 
+            // Returns the unit vector pointing in the same direction as the device
             const VLCnodeDirection getNodeDirection() const;
     };
 }

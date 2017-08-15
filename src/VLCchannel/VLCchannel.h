@@ -32,12 +32,17 @@ namespace VLC{
     protected:
         cSimulation * sim = cSimulation::getActiveSimulation();
 
+        // Holds all the VLCdevices currently in the network
         std::set <VLC::VLCdevice*> VLCdevices;
-        std::set <VLC::VLCconnection, VLC::VLCconnection::comparator> VLCconnections;
+
+        // Holds all connections between a transmitter and receiver currently active
+        std::set <VLC::VLCconnection> VLCconnections;
+
+        // A map between a device and the number of the gate that the channel uses to communicate with it
         std::map <VLC::VLCdevice*, int> VLCdeviceGates;
+
+        // A map between a device and a set of VLCdevViewInfo structures, holding what's currently in view of the device
         std::map <VLC::VLCdevice*, std::set<VLCdevViewInfo> *> VLCcurrentViews;
-
-
 
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
@@ -45,14 +50,23 @@ namespace VLC{
         // Get the list of devices in the Field of View of the given device
         std::set<VLCdevViewInfo>* devicesInFoVOf( VLC::VLCdevice * device );
 
+        // Compute all the necessary computations to step the simulation time forward, i.e., calculating the SINR for every
+        // active connection
         void updateChannel();
 
+        // Signal the channel that the transmitter has begun transmitting
         void startTransmission(VLCdevice * transmitter);
+        // Signal the channel that the transmitter has stopped transmitting
         void endTransmission(VLCdevice* transmitter);
 
+        // Returns the connection between the devices if it exists, NULL otherwise
         VLC::VLCconnection* connectionExists(VLCdevice * transmitter, VLCdevice * receiver);
+        // Creates a connection between the tx and rx
         int createConnection(VLCdevice * transmitter, VLCdevice * receiver);
+        // Terminates the connection between the tx and rx because the tx has sent the VLCchannelSignalEnd
         int dropConnection(VLCdevice * transmitter, VLCdevice * receiver);
+        // Aborts the connection between tx and rx because the devices are no longer able to communicate
+        // this can be because they are too far apart or no longer in their respective FoVs
         int abortConnection(VLCdevice * transmitter, VLCdevice * receiver);
 
 
@@ -60,6 +74,7 @@ namespace VLC{
         VLCchannel();
         virtual ~VLCchannel();
 
+        // Creates a new VLCdevViewInfo structure between device1 and 2. The devices need not be a tx rx pair.
         VLC::VLCdevViewInfo devsPerspective(VLCdevice* device1, VLCdevice* device2);
 
         // Adds a new device to the channel

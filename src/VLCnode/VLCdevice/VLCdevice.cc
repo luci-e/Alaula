@@ -28,6 +28,7 @@ VLC::VLCdevice::VLCdevice(){
     // TODO: type of mobility manager must be a parameter
 }
 
+// Returns a structure of type VLCnodePosition containing info about the node position and orientation
 VLC::VLCnodePosition VLC::VLCdevice::getNodePosition(){
     return this->mobilityManager->getNodePosition();
 }
@@ -55,6 +56,7 @@ void VLC::VLCdevice::initialize() {
 
 }
 
+// Returns a unit vector pointing in the same direction as the device
 VLC::VLCnodeDirection VLC::VLCdevice::getNodeDirection() {
     return this->mobilityManager->getNodeDirection();
 }

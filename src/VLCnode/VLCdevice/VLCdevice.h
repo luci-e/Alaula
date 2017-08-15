@@ -24,9 +24,13 @@ namespace VLC{
     class VLCdevice : public ::cSimpleModule{
 
         protected:
+            // The type of the device
             int deviceType;
+            // The semiangle of the FoV of the device
             double semiAngle;
+            // A pointer to the VLCchannel the device will use to communicate
             VLCchannel* channel;
+            // A pointer to the mobilityManager of this device
             VLCmobilityManager* mobilityManager;
 
             void initialize();
@@ -37,7 +41,9 @@ namespace VLC{
             VLCdevice();
             virtual ~VLCdevice();
 
+            // Returns a structure of type VLCnodePosition containing info about the node position and orientation
             VLCnodePosition getNodePosition();
+            // Returns a unit vector pointing in the same direction as the device
             VLCnodeDirection getNodeDirection();
 
             double getSemiAngle() const;
