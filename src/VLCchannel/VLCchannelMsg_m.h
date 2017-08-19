@@ -18,16 +18,18 @@
 /**
  * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:16</tt> by nedtool.
  * <pre>
- * message VLCchannelMsg
+ * packet VLCchannelMsg
  * {
  *     int messageType;
+ *     int nodeId;
  * }
  * </pre>
  */
-class VLCchannelMsg : public ::cMessage
+class VLCchannelMsg : public ::cPacket
 {
   protected:
     int messageType_var;
+    int nodeId_var;
 
   private:
     void copy(const VLCchannelMsg& other);
@@ -48,26 +50,26 @@ class VLCchannelMsg : public ::cMessage
     // field getter/setter methods
     virtual int getMessageType() const;
     virtual void setMessageType(int messageType);
+    virtual int getNodeId() const;
+    virtual void setNodeId(int nodeId);
 };
 
 inline void doPacking(cCommBuffer *b, VLCchannelMsg& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCchannelMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:23</tt> by nedtool.
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:24</tt> by nedtool.
  * <pre>
  * // A move message indicates that either the tx or rx has altered 
  * // its position or orientation in space.
- * message VLCmoveMsg extends VLCchannelMsg
+ * packet VLCmoveMsg extends VLCchannelMsg
  * {
- *     int nodeId;
  * }
  * </pre>
  */
 class VLCmoveMsg : public ::VLCchannelMsg
 {
   protected:
-    int nodeId_var;
 
   private:
     void copy(const VLCmoveMsg& other);
@@ -86,32 +88,22 @@ class VLCmoveMsg : public ::VLCchannelMsg
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
 };
 
 inline void doPacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:27</tt> by nedtool.
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:26</tt> by nedtool.
  * <pre>
- * message VLCchannelSignalBegin extends VLCchannelMsg
+ * packet VLCchannelSignalBegin extends VLCchannelMsg
  * {
- *     int transmitterNodeId;
- *     double power;
- *     double carrierFreq;
- *     int modulationType;
  * }
  * </pre>
  */
 class VLCchannelSignalBegin : public ::VLCchannelMsg
 {
   protected:
-    int transmitterNodeId_var;
-    double power_var;
-    double carrierFreq_var;
-    int modulationType_var;
 
   private:
     void copy(const VLCchannelSignalBegin& other);
@@ -130,32 +122,22 @@ class VLCchannelSignalBegin : public ::VLCchannelMsg
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getTransmitterNodeId() const;
-    virtual void setTransmitterNodeId(int transmitterNodeId);
-    virtual double getPower() const;
-    virtual void setPower(double power);
-    virtual double getCarrierFreq() const;
-    virtual void setCarrierFreq(double carrierFreq);
-    virtual int getModulationType() const;
-    virtual void setModulationType(int modulationType);
 };
 
 inline void doPacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:34</tt> by nedtool.
+ * Class generated from <tt>src/VLCchannel/VLCchannelMsg.msg:28</tt> by nedtool.
  * <pre>
- * message VLCchannelSignalEnd extends VLCchannelMsg
+ * packet VLCchannelSignalEnd extends VLCchannelMsg
  * {
- *     int transmitterNodeId;
  * }
  * </pre>
  */
 class VLCchannelSignalEnd : public ::VLCchannelMsg
 {
   protected:
-    int transmitterNodeId_var;
 
   private:
     void copy(const VLCchannelSignalEnd& other);
@@ -174,8 +156,6 @@ class VLCchannelSignalEnd : public ::VLCchannelMsg
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
-    virtual int getTransmitterNodeId() const;
-    virtual void setTransmitterNodeId(int transmitterNodeId);
 };
 
 inline void doPacking(cCommBuffer *b, VLCchannelSignalEnd& obj) {obj.parsimPack(b);}

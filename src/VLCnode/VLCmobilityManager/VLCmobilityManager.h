@@ -46,7 +46,7 @@ namespace VLC {
             VLCchannel* channel;
 
             // The time tick the position gets updated in ms
-            double updateInterval = 100;
+            double updateInterval = 10;
 
             // Calculates the versor of the device
             void calculateDirection();
@@ -54,11 +54,13 @@ namespace VLC {
             void initialize();
             virtual void handleMessage(cMessage *msg) = 0;
 
-        public:
-            virtual void moveNode() = 0;
-            void setTargetCoordinates(double x, double y, double z);
+            // Notifies the channel of a movement
+            void notifyChannel();
 
-            virtual void rotateNode() = 0;
+        public:
+            virtual void stepMovement() = 0;
+
+            void setTargetCoordinates(double x, double y, double z);
             void setTargetAngle(double alpha, double beta);
 
             void setNodePosition(VLCnodePosition nodePosition);

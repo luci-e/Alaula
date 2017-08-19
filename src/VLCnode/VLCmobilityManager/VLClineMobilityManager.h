@@ -24,12 +24,15 @@ namespace VLC{
             void initialize();
             void handleMessage(cMessage* cMsg);
 
+            double linearVelocity;
+            double xStep, yStep, zStep;
+            double alphaStep, betaStep;
+
         public:
             VLClineMobilityManager();
             ~VLClineMobilityManager();
 
-            void moveNode();
-            void rotateNode();
+            void stepMovement();
     };
     Define_Module(VLClineMobilityManager);
 }

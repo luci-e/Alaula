@@ -10,6 +10,9 @@
 
 #include <math.h>
 #include <string>
+#include <set>
+#include <simtime.h>
+
 #define VLC_CHANNEL_NAME "vlcChannel"
 
 // Constants for messages to channel identification
@@ -80,11 +83,15 @@ namespace VLC{
         }
     };
 
+    void printDevViewInfo( VLCdevViewInfo devView);
+
+    void printDevicesInFoV(std::set<VLCdevViewInfo> *deviceSet);
+
     // Inverts the given view, that is, device1 swaps with 2, angle1 swaps with 2
     VLCdevViewInfo invertedView( VLCdevViewInfo view);
 
     typedef struct VLCtimeSINR{
-        double time;
+        SimTime time;
         double SINR;
     }VLCtimeSINR;
 
@@ -97,11 +104,20 @@ namespace VLC{
     // Returns the value of the dot product between the 2 vectors
     double dotProduct3d(vector3d v1, vector3d v2);
 
+    // Performs scalar multiplication between the given scalar and vector
+    vector3d scalarMult3d(double scalar, vector3d vector);
+
     // Returns the distance between the to nodes
     double distance(VLCnodePosition pos1, VLCnodePosition pos2);
 
+    // Calculate the versor given by the alpha and beta angles in spherical coordinates
+    vector3d calculateVersor(double alpha, double beta);
+
     // Generates a random string of length length
     char* randomString( size_t length );
+
+    // The phi function aka ϕunction
+    double phi(double x);
 }
 
 #endif /* VLCCONSTS_H_ */

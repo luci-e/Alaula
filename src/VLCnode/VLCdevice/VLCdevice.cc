@@ -17,7 +17,6 @@
 #include <VLCchannel.h>
 #include <cstringtokenizer.h>
 #include <VLCmobilityManager.h>
-#include <VLClineMobilityManager.h>
 #include <math.h>
 
 VLC::VLCdevice::~VLCdevice() {
@@ -38,22 +37,12 @@ void VLC::VLCdevice::initialize() {
     this->channel = dynamic_cast<VLC::VLCchannel*> (cSimulation::getActiveSimulation()->getModuleByPath(VLC_CHANNEL_NAME));
 
     std::vector<double> devicePars = cStringTokenizer(par("devPars").stringValue()).asDoubleVector();
-
-    // Set the position of the transmitter
-    this->mobilityManager->setNodePosition(devicePars[0],
-                                           devicePars[1],
-                                           devicePars[2],
-                                           devicePars[3],
-                                           devicePars[4]);
-
     // Set the semiangle of the device
-    this->semiAngle = devicePars[5];
+    this->semiAngle = devicePars[0];
     this->mobilityManager->setDevice(this);
-
 
     this->channel->addDevice(this, gate("channelPort$i"), gate("channelPort$o"));
     ev<<"Connected to channel: "<<channel->getFullName()<<"\n";
-
 }
 
 // Returns a unit vector pointing in the same direction as the device

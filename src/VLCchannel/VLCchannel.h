@@ -21,11 +21,14 @@
 #include <VLCcommons.h>
 #include <csimulation.h>
 #include <cchannel.h>
+#include <VLCchannelMsg_m.h>
+#include <VLCpacket_m.h>
 
 
 namespace VLC{
     // Forward declarations
     class VLCdevice;
+    class VLCtransmitter;
 
     class VLCchannel : public ::cSimpleModule{
 
@@ -34,6 +37,7 @@ namespace VLC{
 
         // Holds all the VLCdevices currently in the network
         std::set <VLC::VLCdevice*> VLCdevices;
+        std::map <VLC::VLCdevice*, VLCpacket*> transmitterMessages;
 
         // Holds all connections between a transmitter and receiver currently active
         std::set <VLC::VLCconnection> VLCconnections;
@@ -85,6 +89,8 @@ namespace VLC{
 
         // Notifies the channel that the device has changed
         void notifyChange(VLCdevice * device);
+
+        VLCdevViewInfo getDevViewInfo(VLCdevice * transmitter, VLCdevice * receiver);
     };
 
     Define_Module(VLCchannel);

@@ -17,6 +17,8 @@ package vlc.src.VLCnode.VLCmobilityManager;
 @namespace(VLC);
 
 moduleinterface VLCmobilityManager{
+    parameters:
+        string mobilityPars;
     gates:
         output channelPort @loose;
 }

@@ -11,14 +11,8 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-// 
+//
 
-package vlc.src.VLCnode.VLCmobilityManager;
-@namespace(VLC);
-
-simple VLClineMobilityManager like VLCmobilityManager{
-    parameters:
-        string mobilityPars;
-    gates:
-        output channelPort @loose;
+packet VLCpacket{
+	string content;
 }

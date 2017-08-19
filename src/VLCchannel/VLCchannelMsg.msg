@@ -13,24 +13,16 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-message VLCchannelMsg{
+packet VLCchannelMsg{
     int messageType;
+    int nodeId;
 }
 
 
 // A move message indicates that either the tx or rx has altered 
 // its position or orientation in space.
-message VLCmoveMsg extends VLCchannelMsg{
-    int nodeId;
-}
+packet VLCmoveMsg extends VLCchannelMsg{}
 
-message VLCchannelSignalBegin extends VLCchannelMsg{
-	int transmitterNodeId;
-	double power;
-	double carrierFreq;
-	int modulationType;
-}
+packet VLCchannelSignalBegin extends VLCchannelMsg{}
 
-message VLCchannelSignalEnd extends VLCchannelMsg{
-    int transmitterNodeId;
-}
+packet VLCchannelSignalEnd extends VLCchannelMsg{}
