@@ -6,13 +6,15 @@
  */
 
 #include <VLCconnection.h>
-#include <VLCchannelMsg_m.h>
+#include <VLCpacket_m.h>
 #include <VLCchannel.h>
 #include <math.h>
 #include <map>
 #include <string>
+#include <vector>
 #include <VLCtransmissionModels.h>
 #include <VLCtransmitter.h>
+#include <VLCcommons.h>
 
 namespace VLC {
 
@@ -20,7 +22,8 @@ namespace VLC {
 VLCconnection::VLCconnection(VLCdevice *  transmitter, VLCdevice *  receiver, VLCchannel* channel) : transmitter(dynamic_cast<VLCtransmitter*>(transmitter)), receiver(dynamic_cast<VLCreceiver*>(receiver)), channel(channel){
     // Dummy connections are built with NULL that would cause a segfault
     if( channel != NULL){
-        this->gainConstantPart = ( this->transmitter->getLambertianOrder() + 1 ) * this->receiver->getPhotoDetectorArea() / ( 2 * M_PI );
+        this->gainConstantPart = ( this->transmitter->getLambertianOrder() + 1 ) * this->receiver->getPhotoDetectorArea() / ((double) ( 2 * M_PI ));
+        //ev<<"LambertianOrder: "<<this->transmitter->getLambertianOrder()<<" PhotoDetectorArea: "<<this->receiver->getPhotoDetectorArea()<<"\n";
         this->transmissionInfo = this->transmitter->getCurrentTransmissionInfo();
         this->updateConnection();
     }
@@ -30,7 +33,7 @@ void VLCconnection::calculateNextValue() {
     // TODO: magic responsivity number
     double receivedSignalPower = this->connectionGain * this->transmissionInfo["transmissionPower"];
     double SINR =  (receivedSignalPower * 0.003) * (receivedSignalPower * 0.003) / this->receiver->getNoiseVariance(this->transmissionInfo["transmissionPower"]);
-    this->SINRTrend.push_back((VLCtimeSINR) {simTime(), SINR});
+    this->SINRTrend.push_back(VLCtimeSINR(simTime().dbl(), SINR));
 }
 
 // Updates the values used to calculate the SINR
@@ -38,6 +41,9 @@ void VLCconnection::updateConnection() {
     VLCdevViewInfo viewInfo = this->channel->getDevViewInfo(this->transmitter, this->receiver);
     // TODO: Find the function for the optical filter gain and put it as part of the equation!
     this->connectionGain = (this->gainConstantPart / (viewInfo.distance)) * std::pow(cos(viewInfo.angle1), transmitter->getLambertianOrder()) * 1.0 * this->receiver->opticalGain(viewInfo.angle2) * cos(viewInfo.angle2);
+    //ev<<"GainConstantPart: "<<this->gainConstantPart<<\
+            "ConnectionGain: "<<this->connectionGain<<\
+            "TransmissionPower: "<<this->transmissionInfo["transmissionPower"]<<"\n";
 }
 
 // A connection equals another iff the transmitter and receiver are the same

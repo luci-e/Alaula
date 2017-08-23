@@ -1,5 +1,6 @@
 //
 // This program is free software: you can redistribute it and/or modify
+
 // it under the terms of the GNU Lesser General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
@@ -17,34 +18,37 @@
 #include <VLCdevice.h>
 #include <cgate.h>
 #include <cchannel.h>
-#include <VLCchannelMsg_m.h>
+#include <VLCpacket_m.h>
 #include <VLCconnection.h>
 #include <list>
 #include <set>
 #include <algorithm>
 
 
-void VLC::VLCchannel::initialize(){};
+void VLC::VLCchannel::initialize(){
+    scheduleAt(simTime() + this->updateInterval, new cMessage());
+};
 
 void VLC::VLCchannel::handleMessage(cMessage *msg){
     if(msg->isSelfMessage()){
-
+        this->updateChannel();
+        scheduleAt(simTime() + this->updateInterval, new cMessage());
     }else{
-        VLCchannelMsg *chMsg = dynamic_cast<VLCchannelMsg*>(msg);
+        VLCpacket *chMsg = dynamic_cast<VLCpacket*>(msg);
         switch(chMsg->getMessageType()){
-            case CH_MOVE_MSG:{
+            case VLC_MOVE_MSG:{
                 VLCmoveMsg *moveMsg = dynamic_cast<VLCmoveMsg*>(msg);
                 this->notifyChange((VLCdevice*)sim->getModule(moveMsg->getNodeId()));
                 break;
             }
-            case CH_BEGIN_COMM_MSG:{
+            case VLC_SIG_BEGIN_MSG:{
                 VLCchannelSignalBegin *msgBegin = dynamic_cast<VLCchannelSignalBegin*>(msg);
                 VLCdevice * transmitter = (VLCdevice*) sim->getModule(msgBegin->getNodeId());
-                this->transmitterMessages[transmitter] = dynamic_cast<VLCpacket*>(msgBegin->decapsulate());
+                this->transmitterMessages[transmitter] = dynamic_cast<dataPacket*>(msgBegin->decapsulate());
                 this->startTransmission(transmitter);
                 break;
             }
-            case CH_END_COMM_MSG:{
+            case VLC_SIG_END_MSG:{
                 VLCchannelSignalEnd *msgEnd = dynamic_cast<VLCchannelSignalEnd*>(msg);
                 VLCdevice * transmitter = (VLCdevice*) sim->getModule(msgEnd->getNodeId());
                 this->endTransmission(transmitter);
@@ -68,8 +72,8 @@ void VLC::VLCchannel::addDevice(VLCdevice* device, cGate *deviceGateIn, cGate *d
     setGateSize("devicePort", newGateVSize);
 
     // Create the channel to and fro the device
-    cIdealChannel *channelIn = cIdealChannel::create(VLC::randomString(16));
-    cIdealChannel *channelOut = cIdealChannel::create(VLC::randomString(16));
+    cIdealChannel *channelIn = cIdealChannel::create(NULL);
+    cIdealChannel *channelOut = cIdealChannel::create(NULL);
 
     // Connect them
     gate("devicePort$o", newGateVSize-1)->connectTo(deviceGateIn, channelOut);
@@ -169,6 +173,8 @@ int VLC::VLCchannel::createConnection(VLCdevice * transmitter, VLCdevice * recei
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
     if( !conn ){
         VLC::VLCconnection newConn(transmitter, receiver, this);
+        newConn.updateConnection();
+        newConn.calculateNextValue();
         this->VLCconnections.insert(newConn);
         return 0;
     }
@@ -223,7 +229,7 @@ void VLC::VLCchannel::startTransmission(VLCdevice* transmitter) {
 // Signal the channel that the transmitter has stopped transmitting
 void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
     // Get this transmitter packet
-    VLCpacket *pkt = this->transmitterMessages[transmitter];
+    dataPacket *pkt = this->transmitterMessages[transmitter];
 
     for( std::set <VLC::VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end();){
         VLCconnection c = *conn;
@@ -231,6 +237,8 @@ void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
             if( c.getOutcome() ){
                 cGate * receiverGate = gate("devicePort$o", this->VLCdeviceGates[const_cast<VLCdevice*>((VLCdevice*) c.receiver)]);
                 send(pkt->dup(), receiverGate);
+            }else{
+                ev<<"Negative outcome\n";
             }
 
             // Close the connection
@@ -240,7 +248,8 @@ void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
         conn++;
     }
 
-    // Remove the packet from the map
+    // Free the packet and remove it from the map
+    delete this->transmitterMessages[transmitter];
     this->transmitterMessages.erase(transmitter);
 }
 
@@ -248,9 +257,8 @@ void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
 // active connection
 void VLC::VLCchannel::updateChannel(){
     for( std::set<VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end(); conn++){
-        VLCconnection c = *conn;
-        // Calculate the SINR between the devices in the connection
-        // Update the connection by adding a new value to the SINRtrend
+        const VLCconnection &c = *conn;
+        const_cast<VLCconnection&>(c).calculateNextValue();
     }
 }
 
@@ -346,7 +354,7 @@ void VLC::VLCchannel::notifyChange(VLCdevice * device) {
 // Connect the VLCchannel to the mobility manager through an ideal channel
 void VLC::VLCchannel::addMobility(cGate* mobilityGate) {
     setGateSize("mobilityPort", gateSize("mobilityPort")+1);
-    cIdealChannel *c = cIdealChannel::create(VLC::randomString(16));
+    cIdealChannel *c = cIdealChannel::create(NULL);
     mobilityGate->connectTo(gate("mobilityPort", gateSize("mobilityPort")-1), c);
     c->callInitialize();
 }

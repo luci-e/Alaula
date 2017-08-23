@@ -14,29 +14,39 @@
 // 
 
 package vlc.src.VLCnode;
+import ned.DelayChannel;
 import ned.IdealChannel;
-import vlc.src.VLCnode.VLCdevice.*;
-import vlc.src.VLCnode.VLCmobilityManager.*;
+import vlc.src.VLCnode.**.*;
 
-module VLCnode
+module VLCreceiverNode
 {
     parameters:
-        string deviceType;
         string deviceParameters;
 
         string mobilityType;
         string mobilityParameters;
-        @display("bgb=269,129");
+        @display("bgb=257,170");
+
+    gates:
+        inout receiverPort[];
 
     submodules:
-        device: <deviceType> like VLCdevice {
+        device: VLCreceiver {
             parameters:
                 devPars = deviceParameters;
-                @display("p=60,67");
+                @display("p=58,119");
         }
-        
+
         mobilityManager: <mobilityType> like VLCmobilityManager {
             mobilityPars = mobilityParameters;
-            @display("p=197,67");
+            @display("p=186,119");
+        }
+        vlCnodeQueue: VLCnodeQueue {
+            @display("p=58,38;b=40,41");
+        }
+    connections:
+        vlCnodeQueue.devicePort <--> device.queuePort;
+        for i=0..sizeof(receiverPort)-1 {
+    		receiverPort[i] <--> vlCnodeQueue.queuePort++;
         }
 }

@@ -24,6 +24,7 @@ void VLC::VLCreceiver::initialize(){
 }
 
 void VLC::VLCreceiver::handleMessage(cMessage *msg){
+    ev<<"Received something!\n";
     if(!msg->isSelfMessage()){
         VLCpacket *pkt = dynamic_cast<VLCpacket*>(msg);
     }

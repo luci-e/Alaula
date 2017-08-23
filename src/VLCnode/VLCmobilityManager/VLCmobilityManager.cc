@@ -7,7 +7,7 @@
 
 #include <VLCmobilityManager.h>
 #include <VLCmobilityMsg_m.h>
-#include <VLCchannelMsg_m.h>
+#include <VLCpacket_m.h>
 #include <VLCchannel.h>
 #include <math.h>
 #include <VLCcommons.h>

@@ -15,11 +15,6 @@
 
 #define VLC_CHANNEL_NAME "vlcChannel"
 
-// Constants for messages to channel identification
-#define CH_MOVE_MSG 0
-#define CH_BEGIN_COMM_MSG 1
-#define CH_END_COMM_MSG 2
-
 namespace VLC{
     typedef struct VLCnodePosition{
         double x, y, z;
@@ -90,10 +85,15 @@ namespace VLC{
     // Inverts the given view, that is, device1 swaps with 2, angle1 swaps with 2
     VLCdevViewInfo invertedView( VLCdevViewInfo view);
 
-    typedef struct VLCtimeSINR{
-        SimTime time;
+    struct VLCtimeSINR{
+        double time;
         double SINR;
-    }VLCtimeSINR;
+
+        VLCtimeSINR(double t, double s){
+            time = t;
+            SINR = s;
+        };
+    };
 
     // Normalise the vector
     vector3d normalise(vector3d vector);
@@ -116,8 +116,8 @@ namespace VLC{
     // Generates a random string of length length
     char* randomString( size_t length );
 
-    // The phi function aka ϕunction
-    double phi(double x);
+    // The Q function
+    double Qfunction(double x);
 }
 
 #endif /* VLCCONSTS_H_ */

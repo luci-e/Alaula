@@ -13,10 +13,25 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.src.VLCnode.VLCdevice;
-@namespace(VLC);
+#ifndef VLCAPP_H_
+#define VLCAPP_H_
 
-simple VLCtransmitter extends VLCdevice
-{
-    @class(VLCtransmitter);
+#include <omnetpp.h>
+
+namespace VLC{
+    class VLCapp : public ::cSimpleModule{
+        private:
+            int packetSize = 32;
+            double transmissionInterval = 100;
+        public:
+            VLCapp();
+            virtual ~VLCapp();
+        protected:
+            void initialize();
+            virtual void handleMessage(cMessage *msg);
+    };
+
+    Define_Module(VLCapp);
 }
+
+#endif /* VLCAPP_H_ */

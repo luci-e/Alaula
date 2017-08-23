@@ -17,25 +17,35 @@ package vlc.nets;
 import ned.*;
 import vlc.src.VLCchannel.*;
 import vlc.src.VLCnode.*;
-import vlc.src.VLCnode.VLCapp.*;
+import vlc.src.VLCnode.*.*;
 
 
 @namespace(VLC);
 
-network VLCnetwork
+network testNet
 {
-    @display("bgb=605,383");
+    @display("bgb=605,543");
     submodules:
         vlcChannel: VLCchannel {
-            @display("p=298,322;b=574,61");
+            @display("p=300,322;b=570,61");
+        }
+
+        app: VLCapp {
+            @display("p=260,55;b=56,57");
+        }
+        app1: VLCapp {
+            @display("p=335,55;b=55,57");
         }
         vlCnode: VLCreceiverNode {
-            @display("p=76,184;b=131,110");
+            @display("p=80,455;b=131,110");
         }
         vlCnode1: VLCtransmitterNode {
             @display("p=297,184;b=131,110");
         }
         vlCnode2: VLCreceiverNode {
-            @display("p=519,184;b=131,110");
+            @display("p=519,455;b=131,110");
         }
+    connections:
+        app.appGate <--> vlCnode1.transmitterPort++;
+        app1.appGate <--> vlCnode1.transmitterPort++;
 }

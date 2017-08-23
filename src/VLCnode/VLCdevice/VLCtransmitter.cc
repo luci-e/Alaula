@@ -6,7 +6,7 @@
  */
 
 #include <VLCtransmitter.h>
-#include <VLCchannelMsg_m.h>
+#include <VLCpacket_m.h>
 #include <VLCmobilityManager.h>
 #include <VLCpacket_m.h>
 #include <VLCtransmissionModels.h>
@@ -14,11 +14,8 @@
 void VLC::VLCtransmitter::initialize(){
     VLCdevice::initialize();
 
-    // Set the transmitter lambertian order
     this->lambertianOrder = - ( log(2) / log( cos( this->semiAngle ) ) );
-
     this->deviceType = TRANSMITTER_DEVICE;
-    scheduleAt(simTime() + 500, new cMessage("Starting transmission!", 1));
 }
 
 double VLC::VLCtransmitter::getLambertianOrder() const {
@@ -26,17 +23,37 @@ double VLC::VLCtransmitter::getLambertianOrder() const {
 }
 
 void VLC::VLCtransmitter::handleMessage(cMessage *msg){
-    switch(msg->getKind()){
-        case 1:{
-            this->startTransmission();
-            break;
+    if(msg->isSelfMessage()){
+        VLCctrlMsg *ctrlMsg = (VLCctrlMsg*) msg;
+        switch(ctrlMsg->getCtrlCode()){
+            case TRANSMISSION_DONE:{
+                // Stop the transmission inform the queue that the device is now available to send another packet
+                this->stopTransmission();
+                send(ctrlMsg, "queuePort$o");
+                break;
+            }
         }
-        case 2:{
-            this->stopTransmission();
-            break;
+    }else{
+        // If it's not a self message it can be either a ctrl message or a data message
+        VLCpacket *vlcMsg = (VLCpacket*) msg;
+
+        switch(vlcMsg->getMessageType()){
+            case VLC_DATA_MSG:{
+                this->startTransmission((dataPacket*) vlcMsg);
+                break;
+            }
+
+            case VLC_CTRL_MSG:{
+                VLCctrlMsg * ctrlMsg = (VLCctrlMsg*) vlcMsg;
+                switch(ctrlMsg->getCtrlCode()){
+                    case ABORT_TRANSMISSION:{
+                        this->stopTransmission();
+                        break;
+                    }
+                }
+            }
         }
     }
-    delete msg;
 }
 
 
@@ -44,26 +61,41 @@ std::map<std::string, double> VLC::VLCtransmitter::getCurrentTransmissionInfo() 
     return this->currentTransmissionInfo;
 }
 
-void VLC::VLCtransmitter::startTransmission() {
+void VLC::VLCtransmitter::startTransmission(dataPacket *dataPacket) {
     VLCchannelSignalBegin *csb = new VLCchannelSignalBegin();
-    csb->setMessageType(CH_BEGIN_COMM_MSG);
+    csb->setMessageType(VLC_SIG_BEGIN_MSG);
     csb->setNodeId(this->getId());
 
     // Set the info for the transmission
-    this->currentTransmissionInfo["modulationType"] = PAM;
-    this->currentTransmissionInfo["transmissionPower"] = 50.0;
-    this->currentTransmissionInfo["packetLength"] = 32.0;
-    this->currentTransmissionInfo["modulationOrder"] = 2;
+    this->currentTransmissionInfo["modulationType"] = dataPacket->getModulationType();
+    this->currentTransmissionInfo["transmissionPower"] = dataPacket->getTransmissionPower();
+    this->currentTransmissionInfo["packetLength"] = dataPacket->getByteLength();
+
+    switch(dataPacket->getModulationType()){
+        case PAM:{
+            this->currentTransmissionInfo["modulationOrder"] = dataPacket->getModulationOrder();
+            break;
+        }
+
+        case VPPM:{
+            this->currentTransmissionInfo["dutyCycle"] = dataPacket->getDutyCycle();
+            break;
+        }
+    }
 
 
-    csb->encapsulate(new VLCpacket("Hello"));
+    csb->encapsulate(dataPacket);
     send(csb, "channelPort$o");
-    scheduleAt(simTime()+500, new cMessage("Done", 2));
+
+    // Close the transmission when done
+    VLCctrlMsg *ctrlMessage = new VLCctrlMsg();
+    ctrlMessage->setCtrlCode(TRANSMISSION_DONE);
+    scheduleAt(simTime()+500, ctrlMessage);
 }
 
 void VLC::VLCtransmitter::stopTransmission() {
     VLCchannelSignalEnd *cse = new VLCchannelSignalEnd();
     cse->setNodeId(this->getId());
-    cse->setMessageType(CH_END_COMM_MSG);
-    sendDelayed(cse, 1000.0, "channelPort$o");
+    cse->setMessageType(VLC_SIG_END_MSG);
+    send(cse, "channelPort$o");
 }

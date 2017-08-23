@@ -16,10 +16,11 @@
 package vlc.src.VLCnode.VLCdevice;
 @namespace(VLC);
 
-moduleinterface VLCdevice
+simple VLCdevice
 {
     parameters:
         string devPars;
     gates:
-        inout channelPort @loose;        
+        inout channelPort @loose;
+        inout queuePort;
 }

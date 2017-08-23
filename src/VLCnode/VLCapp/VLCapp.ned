@@ -11,8 +11,19 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-//
+// 
 
-packet VLCpacket{
-	string content;
+package vlc.src.VLCnode.VLCapp;
+@namespace(VLC);
+
+//
+// Application model to generate traffic for the network.
+//
+simple VLCapp{
+    parameters:
+        @display("i=block/browser");
+    gates:
+        inout appGate;
 }
+
+

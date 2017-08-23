@@ -21,7 +21,6 @@
 #include <VLCcommons.h>
 #include <csimulation.h>
 #include <cchannel.h>
-#include <VLCchannelMsg_m.h>
 #include <VLCpacket_m.h>
 
 
@@ -34,10 +33,11 @@ namespace VLC{
 
     protected:
         cSimulation * sim = cSimulation::getActiveSimulation();
+        double updateInterval = 10;
 
         // Holds all the VLCdevices currently in the network
         std::set <VLC::VLCdevice*> VLCdevices;
-        std::map <VLC::VLCdevice*, VLCpacket*> transmitterMessages;
+        std::map <VLC::VLCdevice*, dataPacket*> transmitterMessages;
 
         // Holds all connections between a transmitter and receiver currently active
         std::set <VLC::VLCconnection> VLCconnections;

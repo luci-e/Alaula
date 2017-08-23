@@ -16,9 +16,7 @@
 package vlc.src.VLCnode.VLCdevice;
 @namespace(VLC);
 
-simple VLCreceiver like VLCdevice{
-    parameters:
-        string devPars;
-    gates:
-        inout channelPort @loose;
+simple VLCreceiver extends VLCdevice
+{
+    @class(VLCreceiver);             
 }

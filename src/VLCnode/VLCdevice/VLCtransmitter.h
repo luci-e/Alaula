@@ -9,6 +9,7 @@
 #define VLCTRANSMITTER_H_
 
 #include <VLCdevice.h>
+#include <VLCpacket_m.h>
 #include <map>
 #include <string>
 
@@ -22,7 +23,7 @@ namespace VLC{
             void handleMessage(cMessage *msg) override;
 
             // Dummy functions for the moment
-            void startTransmission();
+            void startTransmission(dataPacket *dataPacket);
             void stopTransmission();
 
         public:

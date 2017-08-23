@@ -32,7 +32,7 @@
 #include <VLCmobilityManager.h>
 #include <VLCchannel.h>
 #include <VLCmobilityMsg_m.h>
-#include <VLCchannelMsg_m.h>
+#include <VLCpacket_m.h>
 #include <VLCcommons.h>
 #include <math.h>
 #include <string>

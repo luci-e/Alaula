@@ -78,41 +78,22 @@ namespace VLC{
         auto randchar = []() -> char
         {
             const char charset[] =
-            "0123456789"
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "abcdefghijklmnopqrstuvwxyz";
             const size_t max_index = (sizeof(charset) - 1);
             return charset[ rand() % max_index ];
         };
-        char * str = new char[length+1];
-        for(int i = 0; i< ((int) length) - 2; i++){
+        char * str = new char[length];
+        for(int i = 0; i < length - 1; i++){
             str[i] = randchar();
         }
+
         return str;
     }
 
-    // The phi function aka ϕunction
-    double phi(double x){
-        // constants
-        double a1 =  0.254829592;
-        double a2 = -0.284496736;
-        double a3 =  1.421413741;
-        double a4 = -1.453152027;
-        double a5 =  1.061405429;
-        double p  =  0.3275911;
-
-        // Save the sign of x
-        int sign = 1;
-        if (x < 0){
-            sign = -1;
-        }
-        x = fabs(x)/sqrt(2.0);
-
-        // A&S formula 7.1.26
-        double t = 1.0/(1.0 + p*x);
-        double y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*exp(-x*x);
-
-        return 0.5*(1.0 + sign*y);
+    // The Q function
+    double Qfunction(double x){
+        return 0.5 * erfc(-x * M_SQRT1_2);
     }
 }
 

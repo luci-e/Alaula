@@ -13,16 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-packet VLCchannelMsg{
-    int messageType;
-    int nodeId;
+package vlc.src.VLCnode.VLCnodeQueue;
+
+@namespace(VLC);
+
+simple VLCnodeQueue{
+    gates:
+        inout queuePort[];
+        inout devicePort;
 }
-
-
-// A move message indicates that either the tx or rx has altered 
-// its position or orientation in space.
-packet VLCmoveMsg extends VLCchannelMsg{}
-
-packet VLCchannelSignalBegin extends VLCchannelMsg{}
-
-packet VLCchannelSignalEnd extends VLCchannelMsg{}

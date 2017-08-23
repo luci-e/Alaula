@@ -14,6 +14,8 @@
 // 
 
 package vlc.src.VLCnode.VLCmobilityManager;
+import vlc.src.VLCnode.VLCmobilityManager.VLCmobilityManager;
+
 @namespace(VLC);
 
 simple VLClineMobilityManager like VLCmobilityManager{

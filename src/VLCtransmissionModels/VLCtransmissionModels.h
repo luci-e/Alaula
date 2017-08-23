@@ -8,21 +8,17 @@
 #ifndef VLCTRANSMISSIONMODELS_H_
 #define VLCTRANSMISSIONMODELS_H_
 
-#include <list>
+#include <vector>
 #include <map>
 #include <string>
 #include <VLCcommons.h>
 
-#define VPPM 0
-#define PAM 1
-
-
 namespace VLC{
     // returns true if the packet can be successfully transmitter, false otherwise
-    bool packetTransmitted(std::list<VLC::VLCtimeSINR> & SINRTrend, std::map<std::string, double> & transmissionInfo);
+    bool packetTransmitted(std::vector<VLC::VLCtimeSINR> & SINRTrend, std::map<std::string, double> & transmissionInfo);
 
     // Calculates the average SINR from the trend
-    double averageSINR(std::list<VLC::VLCtimeSINR> & SINRTrend);
+    double averageSINR(std::vector<VLC::VLCtimeSINR> & SINRTrend);
 
     // Bit Error Rate for Variable Pulse Position Modulation
     double BERVPPM(double avgSINR, std::map<std::string, double> & transmissionInfo);
