@@ -23,9 +23,12 @@
 #include <list>
 #include <set>
 #include <algorithm>
-
+#include <Log.h>
+#include <VLCformatter.h>
 
 void VLC::VLCchannel::initialize(){
+    // Initialize the logger and the connection counter
+    plog::init<plog::VLCformatter>(plog::none, par("logFolder"), 1000000, 1);
     scheduleAt(simTime() + this->updateInterval, new cMessage());
 };
 
@@ -59,7 +62,6 @@ void VLC::VLCchannel::handleMessage(cMessage *msg){
     delete msg;
 };
 
-// Nothing to do here
 VLC::VLCchannel::VLCchannel() {}
 VLC::VLCchannel::~VLCchannel() {}
 
@@ -136,7 +138,7 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
 
     devsPer.distance = distance(dev1Position, dev2Position);
 
-    //ev<<"Devices distance is "<<devsPer.distance<<"\n";
+    ev<<"Devices distance is "<<devsPer.distance<<"\n";
 
     // Calculate if the second device is in the FoV of the first one
     vector3d distanceVector = {dev2Position.x-dev1Position.x, dev2Position.y-dev1Position.y, dev2Position.z-dev1Position.z};
@@ -150,6 +152,7 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
     bool can1see2 =  devsPer.angle1  <= dev1FoV;
 
     //ev<<"Can 1 see 2? "<<can1see2<<"\n";
+    //ev<<"Radiance angle is "<<devsPer.angle1<<"\n";
 
     // Do the same for the second device
     distanceVector = opposite(distanceVector);
@@ -162,6 +165,7 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
     bool can2see1 = devsPer.angle2 <= dev2FoV;
 
     //ev<<"Can 2 see 1? "<<can2see1<<"\n";
+    //ev<<"Incidence angle is "<<devsPer.angle2<<"\n";;
 
     devsPer.seeEachOther = can1see2 && can2see1;
 
@@ -291,6 +295,7 @@ void VLC::VLCchannel::notifyChange(VLCdevice * device) {
 
 
     VLCdevViewInfo devInfo;
+    std::set<VLCconnection*> connectionsToUpdate;
 
     // Loop through the connections
     if( device->getDeviceType() == TRANSMITTER_DEVICE ){
@@ -306,8 +311,7 @@ void VLC::VLCchannel::notifyChange(VLCdevice * device) {
                     this->VLCconnections.erase(c++);
                     continue;
                 }else{
-                    conn->updateConnection();
-                    conn->calculateNextValue();
+                    connectionsToUpdate.insert(const_cast<VLCconnection*>(&(*c)));
                 }
             }
             c++;
@@ -325,8 +329,7 @@ void VLC::VLCchannel::notifyChange(VLCdevice * device) {
                     this->VLCconnections.erase(c++);
                     continue;
                 }else{
-                    conn->updateConnection();
-                    conn->calculateNextValue();
+                    connectionsToUpdate.insert(const_cast<VLCconnection*>(&(*c)));
                 }
             }
             c++;
@@ -346,6 +349,12 @@ void VLC::VLCchannel::notifyChange(VLCdevice * device) {
     // Update the map for the device views
     delete this->VLCcurrentViews[device];
     this->VLCcurrentViews[device] = newView;
+
+    // Update the rest of the connections
+    for(std::set<VLCconnection*>::iterator c = connectionsToUpdate.begin(); c != connectionsToUpdate.end(); c++){
+        (*c)->updateConnection();
+        (*c)->calculateNextValue();
+    }
 
     // Update the channel
     this->updateChannel();

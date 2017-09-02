@@ -72,10 +72,10 @@ void VLC::VLClineMobilityManager::initialize() {
         ev<<"Linear velocity is : "<<this->linearVelocity<<" x: "<<this->xStep<<" y: "<<this->yStep<<" z: "<<this->zStep<<"\n";
 
         // The angular velocity is the 12th parameter
-        double angularVelocity = mobilityPars[12];
+        //double angularVelocity = mobilityPars[12];
 
         // And it's a bit more complicated than i thought so maybe later
-        double angle = acos(dotProduct3d(this->nodeDirection, calculateVersor(this->targetPosition.alpha, this->targetPosition.beta)));
+        //double angle = acos(dotProduct3d(this->nodeDirection, calculateVersor(this->targetPosition.alpha, this->targetPosition.beta)));
     }
 }
 

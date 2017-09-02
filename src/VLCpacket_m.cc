@@ -1269,6 +1269,7 @@ dataPacket::dataPacket(const char *name, int kind) : ::VLCpacket(name,kind)
     this->modulationOrder_var = 0;
     this->dutyCycle_var = 0;
     this->content_var = 0;
+    this->transmissionStartTime_var = 0;
 }
 
 dataPacket::dataPacket(const dataPacket& other) : ::VLCpacket(other)
@@ -1295,6 +1296,7 @@ void dataPacket::copy(const dataPacket& other)
     this->modulationOrder_var = other.modulationOrder_var;
     this->dutyCycle_var = other.dutyCycle_var;
     this->content_var = other.content_var;
+    this->transmissionStartTime_var = other.transmissionStartTime_var;
 }
 
 void dataPacket::parsimPack(cCommBuffer *b)
@@ -1305,6 +1307,7 @@ void dataPacket::parsimPack(cCommBuffer *b)
     doPacking(b,this->modulationOrder_var);
     doPacking(b,this->dutyCycle_var);
     doPacking(b,this->content_var);
+    doPacking(b,this->transmissionStartTime_var);
 }
 
 void dataPacket::parsimUnpack(cCommBuffer *b)
@@ -1315,6 +1318,7 @@ void dataPacket::parsimUnpack(cCommBuffer *b)
     doUnpacking(b,this->modulationOrder_var);
     doUnpacking(b,this->dutyCycle_var);
     doUnpacking(b,this->content_var);
+    doUnpacking(b,this->transmissionStartTime_var);
 }
 
 int dataPacket::getModulationType() const
@@ -1367,6 +1371,16 @@ void dataPacket::setContent(const char * content)
     this->content_var = content;
 }
 
+double dataPacket::getTransmissionStartTime() const
+{
+    return transmissionStartTime_var;
+}
+
+void dataPacket::setTransmissionStartTime(double transmissionStartTime)
+{
+    this->transmissionStartTime_var = transmissionStartTime;
+}
+
 class dataPacketDescriptor : public cClassDescriptor
 {
   public:
@@ -1414,7 +1428,7 @@ const char *dataPacketDescriptor::getProperty(const char *propertyname) const
 int dataPacketDescriptor::getFieldCount(void *object) const
 {
     cClassDescriptor *basedesc = getBaseClassDescriptor();
-    return basedesc ? 5+basedesc->getFieldCount(object) : 5;
+    return basedesc ? 6+basedesc->getFieldCount(object) : 6;
 }
 
 unsigned int dataPacketDescriptor::getFieldTypeFlags(void *object, int field) const
@@ -1431,8 +1445,9 @@ unsigned int dataPacketDescriptor::getFieldTypeFlags(void *object, int field) co
         FD_ISEDITABLE,
         FD_ISEDITABLE,
         FD_ISEDITABLE,
+        FD_ISEDITABLE,
     };
-    return (field>=0 && field<5) ? fieldTypeFlags[field] : 0;
+    return (field>=0 && field<6) ? fieldTypeFlags[field] : 0;
 }
 
 const char *dataPacketDescriptor::getFieldName(void *object, int field) const
@@ -1449,8 +1464,9 @@ const char *dataPacketDescriptor::getFieldName(void *object, int field) const
         "modulationOrder",
         "dutyCycle",
         "content",
+        "transmissionStartTime",
     };
-    return (field>=0 && field<5) ? fieldNames[field] : NULL;
+    return (field>=0 && field<6) ? fieldNames[field] : NULL;
 }
 
 int dataPacketDescriptor::findField(void *object, const char *fieldName) const
@@ -1462,6 +1478,7 @@ int dataPacketDescriptor::findField(void *object, const char *fieldName) const
     if (fieldName[0]=='m' && strcmp(fieldName, "modulationOrder")==0) return base+2;
     if (fieldName[0]=='d' && strcmp(fieldName, "dutyCycle")==0) return base+3;
     if (fieldName[0]=='c' && strcmp(fieldName, "content")==0) return base+4;
+    if (fieldName[0]=='t' && strcmp(fieldName, "transmissionStartTime")==0) return base+5;
     return basedesc ? basedesc->findField(object, fieldName) : -1;
 }
 
@@ -1479,8 +1496,9 @@ const char *dataPacketDescriptor::getFieldTypeString(void *object, int field) co
         "int",
         "double",
         "string",
+        "double",
     };
-    return (field>=0 && field<5) ? fieldTypeStrings[field] : NULL;
+    return (field>=0 && field<6) ? fieldTypeStrings[field] : NULL;
 }
 
 const char *dataPacketDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
@@ -1528,6 +1546,7 @@ std::string dataPacketDescriptor::getFieldAsString(void *object, int field, int 
         case 2: return long2string(pp->getModulationOrder());
         case 3: return double2string(pp->getDutyCycle());
         case 4: return oppstring2string(pp->getContent());
+        case 5: return double2string(pp->getTransmissionStartTime());
         default: return "";
     }
 }
@@ -1547,6 +1566,7 @@ bool dataPacketDescriptor::setFieldAsString(void *object, int field, int i, cons
         case 2: pp->setModulationOrder(string2long(value)); return true;
         case 3: pp->setDutyCycle(string2double(value)); return true;
         case 4: pp->setContent((value)); return true;
+        case 5: pp->setTransmissionStartTime(string2double(value)); return true;
         default: return false;
     }
 }

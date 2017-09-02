@@ -18,13 +18,16 @@ namespace VLC{
         protected:
             double lambertianOrder;
             std::map<std::string, double> currentTransmissionInfo;
+            dataPacket lastPacket;
 
             void initialize() override;
             void handleMessage(cMessage *msg) override;
 
-            // Dummy functions for the moment
             void startTransmission(dataPacket *dataPacket);
             void stopTransmission();
+
+            double getTransmissionTime(double packetLength, double dataRate);
+            double getDataRate();
 
         public:
             VLCtransmitter(){};

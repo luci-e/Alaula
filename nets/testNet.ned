@@ -37,13 +37,10 @@ network testNet
             @display("p=335,55;b=55,57");
         }
         vlCnode: VLCreceiverNode {
-            @display("p=80,455;b=131,110");
+            @display("p=297,457;b=131,110");
         }
         vlCnode1: VLCtransmitterNode {
             @display("p=297,184;b=131,110");
-        }
-        vlCnode2: VLCreceiverNode {
-            @display("p=519,455;b=131,110");
         }
     connections:
         app.appGate <--> vlCnode1.transmitterPort++;

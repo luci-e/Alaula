@@ -18,7 +18,11 @@ package vlc.src.VLCchannel;
 @namespace(VLC);
 
 simple VLCchannel{
+    parameters:
+        string logFolder;
     gates:
 		inout devicePort[] @loose;
 		input mobilityPort[] @loose;
+		
+			
 }

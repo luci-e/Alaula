@@ -12,14 +12,16 @@
 #include <VLCcommons.h>
 
 
-#define TRANSMITTER_DEVICE 0
-#define RECEIVER_DEVICE 1
-
-
 namespace VLC{
     // Forward declarations
     class VLCchannel;
     class VLCmobilityManager;
+
+    enum VLCdeviceType : int{
+        TRANSMITTER_DEVICE = 0,
+        RECEIVER_DEVICE = 1,
+        BLOCKING_DEVICE = 2
+    };
 
     class VLCdevice : public ::cSimpleModule{
 

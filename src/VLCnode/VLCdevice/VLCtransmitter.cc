@@ -10,11 +10,13 @@
 #include <VLCmobilityManager.h>
 #include <VLCpacket_m.h>
 #include <VLCtransmissionModels.h>
+#include <stdlib.h>
+#include <time.h>
 
 void VLC::VLCtransmitter::initialize(){
     VLCdevice::initialize();
 
-    this->lambertianOrder = - ( log(2) / log( cos( this->semiAngle ) ) );
+    this->lambertianOrder = -( log(2.0) / log(cos(this->semiAngle)));
     this->deviceType = TRANSMITTER_DEVICE;
 }
 
@@ -90,12 +92,32 @@ void VLC::VLCtransmitter::startTransmission(dataPacket *dataPacket) {
     // Close the transmission when done
     VLCctrlMsg *ctrlMessage = new VLCctrlMsg();
     ctrlMessage->setCtrlCode(TRANSMISSION_DONE);
-    scheduleAt(simTime()+500, ctrlMessage);
+    dataPacket->setTransmissionStartTime(simTime().dbl());
+
+    double dataRate = this->getDataRate();
+    scheduleAt(simTime()+ this->getTransmissionTime(dataPacket->getByteLength(), dataRate), ctrlMessage);
+    this->lastPacket = *dataPacket;
+
+}
+
+double VLC::VLCtransmitter::getTransmissionTime(double packetLength, double dataRate){
+    srand(time(NULL));
+
+    double randomDelay = (double) ( rand() % 10);
+    double transmissionTime = (packetLength * 8.0 / dataRate) + randomDelay;
+    return transmissionTime;
+}
+
+// Compute the datarate as a function of the transmissionInfo
+double VLC::VLCtransmitter::getDataRate(){
+    return 5000000;
 }
 
 void VLC::VLCtransmitter::stopTransmission() {
     VLCchannelSignalEnd *cse = new VLCchannelSignalEnd();
+
     cse->setNodeId(this->getId());
     cse->setMessageType(VLC_SIG_END_MSG);
     send(cse, "channelPort$o");
+
 }

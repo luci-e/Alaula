@@ -24,11 +24,14 @@ class VLCchannel;
 class VLCconnection {
 
     private:
+        long unsigned int connectionId;
         std::vector<VLCtimeSINR> SINRTrend;
         double gainConstantPart, connectionGain;
         std::map<std::string, double> transmissionInfo;
 
     public:
+        static long unsigned int connectionCounter;
+
         VLC::VLCtransmitter *transmitter;
         VLC::VLCreceiver *receiver;
         VLC::VLCchannel *channel;

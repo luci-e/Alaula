@@ -25,9 +25,17 @@ void VLC::VLCreceiver::initialize(){
 
 void VLC::VLCreceiver::handleMessage(cMessage *msg){
     ev<<"Received something!\n";
+
+    dataPacket * dp = (dataPacket*) msg;
+
+    double duration = simTime().dbl() - dp->getTransmissionStartTime();
+    double dataRate = dp->getBitLength() / duration;
+
     if(!msg->isSelfMessage()){
         VLCpacket *pkt = dynamic_cast<VLCpacket*>(msg);
     }
+
+    ev<<"Datarate is "<<dataRate<<"\n";
     delete msg;
 }
 

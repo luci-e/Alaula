@@ -13,25 +13,17 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef VLCAPP_H_
-#define VLCAPP_H_
+#ifndef VLCBLOCKINGDEVICE_H_
+#define VLCBLOCKINGDEVICE_H_
 
-#include <omnetpp.h>
+#include <VLCdevice.h>
 
 namespace VLC{
-    class VLCapp : public ::cSimpleModule{
-        private:
-            int packetSize = 1024;
-            double transmissionInterval = 10;
+
+    class VLCblockingDevice : public VLCdevice{
         public:
-            VLCapp();
-            virtual ~VLCapp();
-        protected:
-            void initialize();
-            virtual void handleMessage(cMessage *msg);
+            VLCblockingDevice();
+            virtual ~VLCblockingDevice();
     };
-
-    Define_Module(VLCapp);
 }
-
-#endif /* VLCAPP_H_ */
+#endif /* VLCBLOCKINGDEVICE_H_ */

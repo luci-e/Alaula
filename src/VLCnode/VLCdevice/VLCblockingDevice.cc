@@ -13,25 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef VLCAPP_H_
-#define VLCAPP_H_
+#include <VLCblockingDevice.h>
+using namespace VLC;
 
-#include <omnetpp.h>
+VLCblockingDevice::VLCblockingDevice() {}
+VLCblockingDevice::~VLCblockingDevice() {}
 
-namespace VLC{
-    class VLCapp : public ::cSimpleModule{
-        private:
-            int packetSize = 1024;
-            double transmissionInterval = 10;
-        public:
-            VLCapp();
-            virtual ~VLCapp();
-        protected:
-            void initialize();
-            virtual void handleMessage(cMessage *msg);
-    };
-
-    Define_Module(VLCapp);
-}
-
-#endif /* VLCAPP_H_ */

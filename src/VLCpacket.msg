@@ -66,5 +66,6 @@ packet dataPacket extends VLCpacket{
     int modulationOrder;
     double dutyCycle;
 	string content;
+	double transmissionStartTime;
 };
     

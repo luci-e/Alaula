@@ -37,9 +37,9 @@ void VLC::VLCapp::handleMessage(cMessage* msg) {
 
     newData->setMessageType(VLC_DATA_MSG);
     newData->setByteLength(this->packetSize);
-    newData->setModulationType(PAM);
-    newData->setModulationOrder(2);
-    newData->setTransmissionPower(50.0);
+    newData->setModulationType(VPPM);
+    newData->setDutyCycle(0.5);
+    newData->setTransmissionPower(48.573);
 
     send(newData, "appGate$o");
 

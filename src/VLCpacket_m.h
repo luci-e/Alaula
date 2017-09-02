@@ -280,6 +280,7 @@ inline void doUnpacking(cCommBuffer *b, VLCctrlMsg& obj) {obj.parsimUnpack(b);}
  *     int modulationOrder;
  *     double dutyCycle;
  *     string content;
+ *     double transmissionStartTime;
  * }
  * </pre>
  */
@@ -291,6 +292,7 @@ class dataPacket : public ::VLCpacket
     int modulationOrder_var;
     double dutyCycle_var;
     opp_string content_var;
+    double transmissionStartTime_var;
 
   private:
     void copy(const dataPacket& other);
@@ -319,6 +321,8 @@ class dataPacket : public ::VLCpacket
     virtual void setDutyCycle(double dutyCycle);
     virtual const char * getContent() const;
     virtual void setContent(const char * content);
+    virtual double getTransmissionStartTime() const;
+    virtual void setTransmissionStartTime(double transmissionStartTime);
 };
 
 inline void doPacking(cCommBuffer *b, dataPacket& obj) {obj.parsimPack(b);}
