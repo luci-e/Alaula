@@ -15,13 +15,9 @@
 
 void VLC::VLCtransmitter::initialize(){
     VLCdevice::initialize();
-
-    this->lambertianOrder = -( log(2.0) / log(cos(this->semiAngle)));
+    this->currentTransmissionInfo[TRANSMISSION_POWER] = 0;
+    this->lambertianOrder = -( log(2.0) / log(cos(2.0*this->semiAngle)));
     this->deviceType = TRANSMITTER_DEVICE;
-}
-
-double VLC::VLCtransmitter::getLambertianOrder() const {
-    return lambertianOrder;
 }
 
 void VLC::VLCtransmitter::handleMessage(cMessage *msg){
@@ -59,28 +55,24 @@ void VLC::VLCtransmitter::handleMessage(cMessage *msg){
 }
 
 
-std::map<std::string, double> VLC::VLCtransmitter::getCurrentTransmissionInfo() {
-    return this->currentTransmissionInfo;
-}
-
 void VLC::VLCtransmitter::startTransmission(dataPacket *dataPacket) {
     VLCchannelSignalBegin *csb = new VLCchannelSignalBegin();
     csb->setMessageType(VLC_SIG_BEGIN_MSG);
     csb->setNodeId(this->getId());
 
     // Set the info for the transmission
-    this->currentTransmissionInfo["modulationType"] = dataPacket->getModulationType();
-    this->currentTransmissionInfo["transmissionPower"] = dataPacket->getTransmissionPower();
-    this->currentTransmissionInfo["packetLength"] = dataPacket->getByteLength();
+    this->currentTransmissionInfo[MODULATION_TYPE] = dataPacket->getModulationType();
+    this->currentTransmissionInfo[TRANSMISSION_POWER] = dataPacket->getTransmissionPower();
+    this->currentTransmissionInfo[PACKET_LENGTH] = dataPacket->getByteLength();
 
     switch(dataPacket->getModulationType()){
         case PAM:{
-            this->currentTransmissionInfo["modulationOrder"] = dataPacket->getModulationOrder();
+            this->currentTransmissionInfo[MODULATION_ORDER] = dataPacket->getModulationOrder();
             break;
         }
 
         case VPPM:{
-            this->currentTransmissionInfo["dutyCycle"] = dataPacket->getDutyCycle();
+            this->currentTransmissionInfo[DUTY_CYCLE] = dataPacket->getDutyCycle();
             break;
         }
     }
@@ -101,10 +93,7 @@ void VLC::VLCtransmitter::startTransmission(dataPacket *dataPacket) {
 }
 
 double VLC::VLCtransmitter::getTransmissionTime(double packetLength, double dataRate){
-    srand(time(NULL));
-
-    double randomDelay = (double) ( rand() % 10);
-    double transmissionTime = (packetLength * 8.0 / dataRate) + randomDelay;
+    double transmissionTime = (packetLength * 8.0 / dataRate);
     return transmissionTime;
 }
 
@@ -120,4 +109,16 @@ void VLC::VLCtransmitter::stopTransmission() {
     cse->setMessageType(VLC_SIG_END_MSG);
     send(cse, "channelPort$o");
 
+}
+
+void VLC::VLCtransmitter::addConnectionStart(VLCconnection* connection) {
+    this->connectionStarts.insert(connection);
+}
+
+void VLC::VLCtransmitter::removeConnectionStart(VLCconnection* connection) {
+    this->connectionStarts.erase(connection);
+}
+
+std::set<VLC::VLCconnection*>& VLC::VLCtransmitter::getConnectionStarts(){
+    return connectionStarts;
 }

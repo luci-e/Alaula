@@ -21,8 +21,8 @@
 namespace VLC{
     class VLCapp : public ::cSimpleModule{
         private:
-            int packetSize = 1024;
-            double transmissionInterval = 10;
+            int packetSize = 8;
+            double transmissionInterval = 1;
         public:
             VLCapp();
             virtual ~VLCapp();

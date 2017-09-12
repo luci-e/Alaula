@@ -10,30 +10,33 @@
 
 #include <omnetpp.h>
 #include <VLCcommons.h>
-
+#include <set>
 
 namespace VLC{
     // Forward declarations
     class VLCchannel;
     class VLCmobilityManager;
+    class VLCconnection;
 
     enum VLCdeviceType : int{
         TRANSMITTER_DEVICE = 0,
         RECEIVER_DEVICE = 1,
-        BLOCKING_DEVICE = 2
+        BLOCKING_DEVICE = 2,
+        NOISE_DEVICE = 3
     };
 
     class VLCdevice : public ::cSimpleModule{
 
         protected:
             // The type of the device
-            int deviceType;
+            VLC::VLCdeviceType deviceType;
             // The semiangle of the FoV of the device
             double semiAngle;
             // A pointer to the VLCchannel the device will use to communicate
             VLCchannel* channel;
             // A pointer to the mobilityManager of this device
             VLCmobilityManager* mobilityManager;
+
 
             void initialize();
             virtual void handleMessage(cMessage *msg) = 0;
@@ -50,7 +53,7 @@ namespace VLC{
 
             double getSemiAngle() const;
             void setSemiAngle(double semiAngle);
-            int getDeviceType() const;
+            VLC::VLCdeviceType getDeviceType() const;
 };
 }
 

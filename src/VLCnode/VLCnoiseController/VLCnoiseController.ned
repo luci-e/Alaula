@@ -13,29 +13,12 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.nets;
-import ned.*;
-import vlc.src.VLCchannel.*;
-import vlc.src.VLCnode.*;
-import vlc.src.VLCnode.VLCapp.*;
-
-
+package vlc.src.VLCnode.VLCnoiseController;
 @namespace(VLC);
 
-network VLCnetwork
-{
-    @display("bgb=605,383");
-    submodules:
-        vlcChannel: VLCchannel {
-            @display("p=298,322;b=574,61");
-        }
-        vlCnode: VLCreceiverNode {
-            @display("p=76,184;b=131,110");
-        }
-        vlCnode1: VLCtransmitterNode {
-            @display("p=297,184;b=131,110");
-        }
-        vlCnode2: VLCreceiverNode {
-            @display("p=519,184;b=131,110");
-        }
+moduleinterface VLCnoiseController{
+    parameters:
+        string noisePars;
+    gates:
+        inout noiseDevicePort;
 }

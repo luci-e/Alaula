@@ -27,6 +27,9 @@ namespace VLC{
             VLCreceiver(){};
             ~VLCreceiver(){};
 
+            // A set holding the connection this receiver is currently in
+            mutable std::set<VLC::VLCconnection*> connectionEnds;
+
             double getSemiAngle() const;
             void setSemiAngle(double semiAngle);
             double getLambertianOrder() const;
@@ -35,6 +38,9 @@ namespace VLC{
             double getNoiseVariance(double Pr) const;
             double opticalGain(double psi) const;
 
+            void addConnectionEnd( VLCconnection * connection);
+            void removeConnectionEnd( VLCconnection * connection);
+            std::set<VLC::VLCconnection*>& getConnectionEnds();
 };
     Define_Module(VLCreceiver);
 }

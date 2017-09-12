@@ -61,6 +61,7 @@ EXECUTE_ON_STARTUP(
     e->insert(VLC_SIG_END_MSG, "VLC_SIG_END_MSG");
     e->insert(VLC_CTRL_MSG, "VLC_CTRL_MSG");
     e->insert(VLC_DATA_MSG, "VLC_DATA_MSG");
+    e->insert(VLC_NOISE_MSG, "VLC_NOISE_MSG");
 );
 
 EXECUTE_ON_STARTUP(
@@ -1022,6 +1023,241 @@ void *VLCchannelSignalEndDescriptor::getFieldStructPointer(void *object, int fie
     }
 }
 
+Register_Class(VLCnoiseMsg);
+
+VLCnoiseMsg::VLCnoiseMsg(const char *name, int kind) : ::VLCpacket(name,kind)
+{
+    this->nodeId_var = 0;
+}
+
+VLCnoiseMsg::VLCnoiseMsg(const VLCnoiseMsg& other) : ::VLCpacket(other)
+{
+    copy(other);
+}
+
+VLCnoiseMsg::~VLCnoiseMsg()
+{
+}
+
+VLCnoiseMsg& VLCnoiseMsg::operator=(const VLCnoiseMsg& other)
+{
+    if (this==&other) return *this;
+    ::VLCpacket::operator=(other);
+    copy(other);
+    return *this;
+}
+
+void VLCnoiseMsg::copy(const VLCnoiseMsg& other)
+{
+    this->nodeId_var = other.nodeId_var;
+}
+
+void VLCnoiseMsg::parsimPack(cCommBuffer *b)
+{
+    ::VLCpacket::parsimPack(b);
+    doPacking(b,this->nodeId_var);
+}
+
+void VLCnoiseMsg::parsimUnpack(cCommBuffer *b)
+{
+    ::VLCpacket::parsimUnpack(b);
+    doUnpacking(b,this->nodeId_var);
+}
+
+int VLCnoiseMsg::getNodeId() const
+{
+    return nodeId_var;
+}
+
+void VLCnoiseMsg::setNodeId(int nodeId)
+{
+    this->nodeId_var = nodeId;
+}
+
+class VLCnoiseMsgDescriptor : public cClassDescriptor
+{
+  public:
+    VLCnoiseMsgDescriptor();
+    virtual ~VLCnoiseMsgDescriptor();
+
+    virtual bool doesSupport(cObject *obj) const;
+    virtual const char *getProperty(const char *propertyname) const;
+    virtual int getFieldCount(void *object) const;
+    virtual const char *getFieldName(void *object, int field) const;
+    virtual int findField(void *object, const char *fieldName) const;
+    virtual unsigned int getFieldTypeFlags(void *object, int field) const;
+    virtual const char *getFieldTypeString(void *object, int field) const;
+    virtual const char *getFieldProperty(void *object, int field, const char *propertyname) const;
+    virtual int getArraySize(void *object, int field) const;
+
+    virtual std::string getFieldAsString(void *object, int field, int i) const;
+    virtual bool setFieldAsString(void *object, int field, int i, const char *value) const;
+
+    virtual const char *getFieldStructName(void *object, int field) const;
+    virtual void *getFieldStructPointer(void *object, int field, int i) const;
+};
+
+Register_ClassDescriptor(VLCnoiseMsgDescriptor);
+
+VLCnoiseMsgDescriptor::VLCnoiseMsgDescriptor() : cClassDescriptor("VLCnoiseMsg", "VLCpacket")
+{
+}
+
+VLCnoiseMsgDescriptor::~VLCnoiseMsgDescriptor()
+{
+}
+
+bool VLCnoiseMsgDescriptor::doesSupport(cObject *obj) const
+{
+    return dynamic_cast<VLCnoiseMsg *>(obj)!=NULL;
+}
+
+const char *VLCnoiseMsgDescriptor::getProperty(const char *propertyname) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? basedesc->getProperty(propertyname) : NULL;
+}
+
+int VLCnoiseMsgDescriptor::getFieldCount(void *object) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? 1+basedesc->getFieldCount(object) : 1;
+}
+
+unsigned int VLCnoiseMsgDescriptor::getFieldTypeFlags(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldTypeFlags(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,
+    };
+    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+}
+
+const char *VLCnoiseMsgDescriptor::getFieldName(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldName(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    static const char *fieldNames[] = {
+        "nodeId",
+    };
+    return (field>=0 && field<1) ? fieldNames[field] : NULL;
+}
+
+int VLCnoiseMsgDescriptor::findField(void *object, const char *fieldName) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    int base = basedesc ? basedesc->getFieldCount(object) : 0;
+    if (fieldName[0]=='n' && strcmp(fieldName, "nodeId")==0) return base+0;
+    return basedesc ? basedesc->findField(object, fieldName) : -1;
+}
+
+const char *VLCnoiseMsgDescriptor::getFieldTypeString(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldTypeString(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    static const char *fieldTypeStrings[] = {
+        "int",
+    };
+    return (field>=0 && field<1) ? fieldTypeStrings[field] : NULL;
+}
+
+const char *VLCnoiseMsgDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldProperty(object, field, propertyname);
+        field -= basedesc->getFieldCount(object);
+    }
+    switch (field) {
+        default: return NULL;
+    }
+}
+
+int VLCnoiseMsgDescriptor::getArraySize(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getArraySize(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseMsg *pp = (VLCnoiseMsg *)object; (void)pp;
+    switch (field) {
+        default: return 0;
+    }
+}
+
+std::string VLCnoiseMsgDescriptor::getFieldAsString(void *object, int field, int i) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldAsString(object,field,i);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseMsg *pp = (VLCnoiseMsg *)object; (void)pp;
+    switch (field) {
+        case 0: return long2string(pp->getNodeId());
+        default: return "";
+    }
+}
+
+bool VLCnoiseMsgDescriptor::setFieldAsString(void *object, int field, int i, const char *value) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->setFieldAsString(object,field,i,value);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseMsg *pp = (VLCnoiseMsg *)object; (void)pp;
+    switch (field) {
+        case 0: pp->setNodeId(string2long(value)); return true;
+        default: return false;
+    }
+}
+
+const char *VLCnoiseMsgDescriptor::getFieldStructName(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldStructName(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    switch (field) {
+        default: return NULL;
+    };
+}
+
+void *VLCnoiseMsgDescriptor::getFieldStructPointer(void *object, int field, int i) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldStructPointer(object, field, i);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseMsg *pp = (VLCnoiseMsg *)object; (void)pp;
+    switch (field) {
+        default: return NULL;
+    }
+}
+
 Register_Class(VLCctrlMsg);
 
 VLCctrlMsg::VLCctrlMsg(const char *name, int kind) : ::VLCpacket(name,kind)
@@ -1255,6 +1491,241 @@ void *VLCctrlMsgDescriptor::getFieldStructPointer(void *object, int field, int i
         field -= basedesc->getFieldCount(object);
     }
     VLCctrlMsg *pp = (VLCctrlMsg *)object; (void)pp;
+    switch (field) {
+        default: return NULL;
+    }
+}
+
+Register_Class(VLCnoiseControlMsg);
+
+VLCnoiseControlMsg::VLCnoiseControlMsg(const char *name, int kind) : ::VLCctrlMsg(name,kind)
+{
+    this->noisePower_var = 0;
+}
+
+VLCnoiseControlMsg::VLCnoiseControlMsg(const VLCnoiseControlMsg& other) : ::VLCctrlMsg(other)
+{
+    copy(other);
+}
+
+VLCnoiseControlMsg::~VLCnoiseControlMsg()
+{
+}
+
+VLCnoiseControlMsg& VLCnoiseControlMsg::operator=(const VLCnoiseControlMsg& other)
+{
+    if (this==&other) return *this;
+    ::VLCctrlMsg::operator=(other);
+    copy(other);
+    return *this;
+}
+
+void VLCnoiseControlMsg::copy(const VLCnoiseControlMsg& other)
+{
+    this->noisePower_var = other.noisePower_var;
+}
+
+void VLCnoiseControlMsg::parsimPack(cCommBuffer *b)
+{
+    ::VLCctrlMsg::parsimPack(b);
+    doPacking(b,this->noisePower_var);
+}
+
+void VLCnoiseControlMsg::parsimUnpack(cCommBuffer *b)
+{
+    ::VLCctrlMsg::parsimUnpack(b);
+    doUnpacking(b,this->noisePower_var);
+}
+
+double VLCnoiseControlMsg::getNoisePower() const
+{
+    return noisePower_var;
+}
+
+void VLCnoiseControlMsg::setNoisePower(double noisePower)
+{
+    this->noisePower_var = noisePower;
+}
+
+class VLCnoiseControlMsgDescriptor : public cClassDescriptor
+{
+  public:
+    VLCnoiseControlMsgDescriptor();
+    virtual ~VLCnoiseControlMsgDescriptor();
+
+    virtual bool doesSupport(cObject *obj) const;
+    virtual const char *getProperty(const char *propertyname) const;
+    virtual int getFieldCount(void *object) const;
+    virtual const char *getFieldName(void *object, int field) const;
+    virtual int findField(void *object, const char *fieldName) const;
+    virtual unsigned int getFieldTypeFlags(void *object, int field) const;
+    virtual const char *getFieldTypeString(void *object, int field) const;
+    virtual const char *getFieldProperty(void *object, int field, const char *propertyname) const;
+    virtual int getArraySize(void *object, int field) const;
+
+    virtual std::string getFieldAsString(void *object, int field, int i) const;
+    virtual bool setFieldAsString(void *object, int field, int i, const char *value) const;
+
+    virtual const char *getFieldStructName(void *object, int field) const;
+    virtual void *getFieldStructPointer(void *object, int field, int i) const;
+};
+
+Register_ClassDescriptor(VLCnoiseControlMsgDescriptor);
+
+VLCnoiseControlMsgDescriptor::VLCnoiseControlMsgDescriptor() : cClassDescriptor("VLCnoiseControlMsg", "VLCctrlMsg")
+{
+}
+
+VLCnoiseControlMsgDescriptor::~VLCnoiseControlMsgDescriptor()
+{
+}
+
+bool VLCnoiseControlMsgDescriptor::doesSupport(cObject *obj) const
+{
+    return dynamic_cast<VLCnoiseControlMsg *>(obj)!=NULL;
+}
+
+const char *VLCnoiseControlMsgDescriptor::getProperty(const char *propertyname) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? basedesc->getProperty(propertyname) : NULL;
+}
+
+int VLCnoiseControlMsgDescriptor::getFieldCount(void *object) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    return basedesc ? 1+basedesc->getFieldCount(object) : 1;
+}
+
+unsigned int VLCnoiseControlMsgDescriptor::getFieldTypeFlags(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldTypeFlags(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    static unsigned int fieldTypeFlags[] = {
+        FD_ISEDITABLE,
+    };
+    return (field>=0 && field<1) ? fieldTypeFlags[field] : 0;
+}
+
+const char *VLCnoiseControlMsgDescriptor::getFieldName(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldName(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    static const char *fieldNames[] = {
+        "noisePower",
+    };
+    return (field>=0 && field<1) ? fieldNames[field] : NULL;
+}
+
+int VLCnoiseControlMsgDescriptor::findField(void *object, const char *fieldName) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    int base = basedesc ? basedesc->getFieldCount(object) : 0;
+    if (fieldName[0]=='n' && strcmp(fieldName, "noisePower")==0) return base+0;
+    return basedesc ? basedesc->findField(object, fieldName) : -1;
+}
+
+const char *VLCnoiseControlMsgDescriptor::getFieldTypeString(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldTypeString(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    static const char *fieldTypeStrings[] = {
+        "double",
+    };
+    return (field>=0 && field<1) ? fieldTypeStrings[field] : NULL;
+}
+
+const char *VLCnoiseControlMsgDescriptor::getFieldProperty(void *object, int field, const char *propertyname) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldProperty(object, field, propertyname);
+        field -= basedesc->getFieldCount(object);
+    }
+    switch (field) {
+        default: return NULL;
+    }
+}
+
+int VLCnoiseControlMsgDescriptor::getArraySize(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getArraySize(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseControlMsg *pp = (VLCnoiseControlMsg *)object; (void)pp;
+    switch (field) {
+        default: return 0;
+    }
+}
+
+std::string VLCnoiseControlMsgDescriptor::getFieldAsString(void *object, int field, int i) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldAsString(object,field,i);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseControlMsg *pp = (VLCnoiseControlMsg *)object; (void)pp;
+    switch (field) {
+        case 0: return double2string(pp->getNoisePower());
+        default: return "";
+    }
+}
+
+bool VLCnoiseControlMsgDescriptor::setFieldAsString(void *object, int field, int i, const char *value) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->setFieldAsString(object,field,i,value);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseControlMsg *pp = (VLCnoiseControlMsg *)object; (void)pp;
+    switch (field) {
+        case 0: pp->setNoisePower(string2double(value)); return true;
+        default: return false;
+    }
+}
+
+const char *VLCnoiseControlMsgDescriptor::getFieldStructName(void *object, int field) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldStructName(object, field);
+        field -= basedesc->getFieldCount(object);
+    }
+    switch (field) {
+        default: return NULL;
+    };
+}
+
+void *VLCnoiseControlMsgDescriptor::getFieldStructPointer(void *object, int field, int i) const
+{
+    cClassDescriptor *basedesc = getBaseClassDescriptor();
+    if (basedesc) {
+        if (field < basedesc->getFieldCount(object))
+            return basedesc->getFieldStructPointer(object, field, i);
+        field -= basedesc->getFieldCount(object);
+    }
+    VLCnoiseControlMsg *pp = (VLCnoiseControlMsg *)object; (void)pp;
     switch (field) {
         default: return NULL;
     }

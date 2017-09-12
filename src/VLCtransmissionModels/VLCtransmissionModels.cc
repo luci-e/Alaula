@@ -6,22 +6,24 @@
  */
 
 #include <VLCtransmissionModels.h>
+#include <VLCconnection.h>
 #include <VLCpacket_m.h>
 #include <VLCcommons.h>
 #include <vector>
 #include <map>
 #include <string>
 #include <math.h>
+#include <Log.h>
 #include <time.h>
 
 // returns true if the packet can be successfully transmitter, false otherwise
-bool VLC::packetTransmitted(std::vector<VLC::VLCtimeSINR> & SINRTrend, std::map<std::string, double> & transmissionInfo){
-    switch((int) transmissionInfo["modulationType"]){
+bool VLC::packetTransmitted(VLCconnection *conn){
+    switch((int) conn->getTransmissionInfo()[MODULATION_TYPE]){
         case VPPM:{
-            return VLC::PERVPPM(VLC::averageSINR(SINRTrend), transmissionInfo);
+            return VLC::PERVPPM(conn);
         }
         case PAM:{
-            return VLC::PERPAM(VLC::averageSINR(SINRTrend), transmissionInfo);
+            return VLC::PERPAM(conn);
         }
     }
     return false;
@@ -52,24 +54,50 @@ double VLC::averageSINR(std::vector<VLC::VLCtimeSINR> & SINRTrend){
 }
 
 // Bit Error Rate for Variable Pulse Position Modulation
-double VLC::BERVPPM(double avgSINR, std::map<std::string, double> & transmissionInfo) {
+double VLC::BERVPPM(VLCconnection * conn) {
     double x;
-    double alpha = transmissionInfo["dutyCycle"];
-    double beta = 1.0; // Another magic value
+    double alpha = conn->getTransmissionInfo()[DUTY_CYCLE];
+    double beta = 1.0; // Another magic values
 
-    if (alpha <= 0.5)
-        x = std::sqrt(avgSINR / (2.0 * beta * alpha));
-    else
-        x = std::sqrt(avgSINR * (1.0 - alpha) / (2.0 * beta * alpha * alpha));
+    double BER;
 
-    // Calculate BER = Q(x)
-    // Q-function is the tail probability of the standard normal distribution
-    return Qfunction(x);
+    double avgSINR = averageSINR(conn->getSINRTrend());
+
+    if(avgSINR >= 0 ){
+
+        if (alpha <= 0.5){
+            x = std::sqrt(avgSINR / (2.0 * beta * alpha));
+        }else{
+            x = std::sqrt(avgSINR * (1.0 - alpha) / (2.0 * beta * alpha * alpha));
+        }
+
+        // Calculate BER = Q(x)
+        // Q-function is the tail probability of the standard normal distribution
+
+        BER = Qfunction(x);
+    }else{
+        BER = 1;
+    }
+
+    VLCdevViewInfo viewInfo = conn->getLastView();
+
+    LOGN << conn->getConnectionId() << ";"\
+            << viewInfo.device1 << ";"\
+            << viewInfo.device2 << ";"\
+            << simTime().dbl() << ";"\
+            << "PositionBER"<<";"\
+            << conn->receiver->getNodePosition().y << ";"\
+            << log10(BER) << ";"\
+            << 0;
+
+    return BER;
 }
 
 // Symbol Error Rate for Pulse Amplitude Modulation
-double VLC::SERPAM(double avgSINR, std::map<std::string, double> & transmissionInfo) {
-    double modulationOrder = transmissionInfo["modulationOrder"];
+double VLC::SERPAM(VLCconnection * conn) {
+
+    double avgSINR = VLC::averageSINR(conn->getSINRTrend());
+    double modulationOrder = conn->getTransmissionInfo()[MODULATION_ORDER];
     //ev<<"Modulation order is: "<<modulationOrder<<"\n";
 
     double x = std::sqrt(avgSINR)/(modulationOrder - 1.0);
@@ -82,19 +110,20 @@ double VLC::SERPAM(double avgSINR, std::map<std::string, double> & transmissionI
 }
 
 // Packet Error Rate for Variable Pulse Position Modulation returns true if the randomly generated number is less than the PER
-bool VLC::PERVPPM(double avgSINR, std::map<std::string, double> & transmissionInfo) {
-    double PER = 1.0 - std::pow((1.0 - VLC::BERVPPM(avgSINR, transmissionInfo)), 8.0 * transmissionInfo["packetLength"]);
+bool VLC::PERVPPM(VLCconnection* conn) {
+    double PER = 1.0 - std::pow(1.0 - VLC::BERVPPM(conn), 8.0 * conn->getTransmissionInfo()[PACKET_LENGTH]);
     //ev<<"PERVPPM is: "<<PER<<"\n";
 
     srand(time(0));
     double prob = (double)rand() / (double)RAND_MAX;
 
-    return (prob < PER);
+    return (prob > PER);
 }
 
 // Packet Error Rate for Pulse Amplitude Modulation returns true if the randomly generated number is less than the PER
-bool VLC::PERPAM(double avgSINR, std::map<std::string, double> & transmissionInfo) {
-    double PER = 1.0 - std::pow( (1.0 - VLC::SERPAM(avgSINR, transmissionInfo)), ((8.0 * transmissionInfo["packetLength"]) / std::log2(transmissionInfo["modulationOrder"])));
+bool VLC::PERPAM(VLCconnection * conn) {
+    std::map<VLC::transmissionKeys, double> & transmissionInfo = conn->getTransmissionInfo();
+    double PER = 1.0 - std::pow( (1.0 - VLC::SERPAM(conn)), ((8.0 * transmissionInfo[PACKET_LENGTH]) / std::log2(transmissionInfo[MODULATION_ORDER])));
     //ev<<"PERPAM is: "<<PER<<"\n";
 
     srand(time(0));

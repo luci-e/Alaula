@@ -9,7 +9,7 @@ namespace plog
     {
     public:
         static util::nstring header(){
-            return PLOG_NSTR("ConnectionId;Transmitter;Receiver;Simtime;Distance;Phi;Psi;SNR\n");
+            return PLOG_NSTR("ConnectionId;Transmitter;Receiver;Simtime;Type;Value1;Value2;Value3\n");
         }
 
         static util::nstring format(const Record& record){

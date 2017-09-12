@@ -22,5 +22,4 @@ simple VLCdevice
         string devPars;
     gates:
         inout channelPort @loose;
-        inout queuePort;
 }

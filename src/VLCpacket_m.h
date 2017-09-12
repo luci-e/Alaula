@@ -28,6 +28,8 @@
  * 
  *     VLC_CTRL_MSG = 3;
  *     VLC_DATA_MSG = 4;
+ * 
+ *     VLC_NOISE_MSG = 5;
  * }
  * </pre>
  */
@@ -36,11 +38,12 @@ enum VLCmsgType {
     VLC_SIG_BEGIN_MSG = 1,
     VLC_SIG_END_MSG = 2,
     VLC_CTRL_MSG = 3,
-    VLC_DATA_MSG = 4
+    VLC_DATA_MSG = 4,
+    VLC_NOISE_MSG = 5
 };
 
 /**
- * Enum generated from <tt>src/VLCpacket.msg:26</tt> by nedtool.
+ * Enum generated from <tt>src/VLCpacket.msg:28</tt> by nedtool.
  * <pre>
  * enum VLCctrlCode
  * {
@@ -65,7 +68,7 @@ enum VLCctrlCode {
 };
 
 /**
- * Enum generated from <tt>src/VLCpacket.msg:38</tt> by nedtool.
+ * Enum generated from <tt>src/VLCpacket.msg:40</tt> by nedtool.
  * <pre>
  * enum VLCmodulationType
  * {
@@ -81,7 +84,7 @@ enum VLCmodulationType {
 };
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:43</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:45</tt> by nedtool.
  * <pre>
  * packet VLCpacket
  * {
@@ -119,7 +122,7 @@ inline void doPacking(cCommBuffer *b, VLCpacket& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCpacket& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:47</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:49</tt> by nedtool.
  * <pre>
  * packet VLCmoveMsg extends VLCpacket
  * {
@@ -157,7 +160,7 @@ inline void doPacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:51</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:53</tt> by nedtool.
  * <pre>
  * packet VLCchannelSignalBegin extends VLCpacket
  * {
@@ -195,7 +198,7 @@ inline void doPacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimPac
 inline void doUnpacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:55</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:57</tt> by nedtool.
  * <pre>
  * packet VLCchannelSignalEnd extends VLCpacket
  * {
@@ -233,7 +236,45 @@ inline void doPacking(cCommBuffer *b, VLCchannelSignalEnd& obj) {obj.parsimPack(
 inline void doUnpacking(cCommBuffer *b, VLCchannelSignalEnd& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:59</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:61</tt> by nedtool.
+ * <pre>
+ * packet VLCnoiseMsg extends VLCpacket
+ * {
+ *     int nodeId;
+ * }
+ * </pre>
+ */
+class VLCnoiseMsg : public ::VLCpacket
+{
+  protected:
+    int nodeId_var;
+
+  private:
+    void copy(const VLCnoiseMsg& other);
+
+  protected:
+    // protected and unimplemented operator==(), to prevent accidental usage
+    bool operator==(const VLCnoiseMsg&);
+
+  public:
+    VLCnoiseMsg(const char *name=NULL, int kind=0);
+    VLCnoiseMsg(const VLCnoiseMsg& other);
+    virtual ~VLCnoiseMsg();
+    VLCnoiseMsg& operator=(const VLCnoiseMsg& other);
+    virtual VLCnoiseMsg *dup() const {return new VLCnoiseMsg(*this);}
+    virtual void parsimPack(cCommBuffer *b);
+    virtual void parsimUnpack(cCommBuffer *b);
+
+    // field getter/setter methods
+    virtual int getNodeId() const;
+    virtual void setNodeId(int nodeId);
+};
+
+inline void doPacking(cCommBuffer *b, VLCnoiseMsg& obj) {obj.parsimPack(b);}
+inline void doUnpacking(cCommBuffer *b, VLCnoiseMsg& obj) {obj.parsimUnpack(b);}
+
+/**
+ * Class generated from <tt>src/VLCpacket.msg:65</tt> by nedtool.
  * <pre>
  * packet VLCctrlMsg extends VLCpacket
  * {
@@ -271,7 +312,45 @@ inline void doPacking(cCommBuffer *b, VLCctrlMsg& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCctrlMsg& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:63</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:69</tt> by nedtool.
+ * <pre>
+ * packet VLCnoiseControlMsg extends VLCctrlMsg
+ * {
+ *     double noisePower;
+ * }
+ * </pre>
+ */
+class VLCnoiseControlMsg : public ::VLCctrlMsg
+{
+  protected:
+    double noisePower_var;
+
+  private:
+    void copy(const VLCnoiseControlMsg& other);
+
+  protected:
+    // protected and unimplemented operator==(), to prevent accidental usage
+    bool operator==(const VLCnoiseControlMsg&);
+
+  public:
+    VLCnoiseControlMsg(const char *name=NULL, int kind=0);
+    VLCnoiseControlMsg(const VLCnoiseControlMsg& other);
+    virtual ~VLCnoiseControlMsg();
+    VLCnoiseControlMsg& operator=(const VLCnoiseControlMsg& other);
+    virtual VLCnoiseControlMsg *dup() const {return new VLCnoiseControlMsg(*this);}
+    virtual void parsimPack(cCommBuffer *b);
+    virtual void parsimUnpack(cCommBuffer *b);
+
+    // field getter/setter methods
+    virtual double getNoisePower() const;
+    virtual void setNoisePower(double noisePower);
+};
+
+inline void doPacking(cCommBuffer *b, VLCnoiseControlMsg& obj) {obj.parsimPack(b);}
+inline void doUnpacking(cCommBuffer *b, VLCnoiseControlMsg& obj) {obj.parsimUnpack(b);}
+
+/**
+ * Class generated from <tt>src/VLCpacket.msg:73</tt> by nedtool.
  * <pre>
  * packet dataPacket extends VLCpacket
  * {

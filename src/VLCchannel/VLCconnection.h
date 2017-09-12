@@ -12,6 +12,7 @@
 #include <VLCdevice.h>
 #include <VLCreceiver.h>
 #include <VLCtransmitter.h>
+#include <VLCemitter.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -23,11 +24,30 @@ class VLCchannel;
 
 class VLCconnection {
 
+    struct sourceInfo{
+        VLCdevice * source;
+        double gainConstantPart;
+        double sourceGain;
+        double signalPower;
+    };
+
     private:
         long unsigned int connectionId;
-        std::vector<VLCtimeSINR> SINRTrend;
-        double gainConstantPart, connectionGain;
-        std::map<std::string, double> transmissionInfo;
+        mutable std::vector<VLCtimeSINR> SINRTrend;
+
+        mutable std::map<VLCdevice*, sourceInfo> noiseSources;
+        mutable double totalNoisePower = 0;
+
+        // Info about the transmission as per the last update of this connection
+        mutable double connGainConstantPart;
+        mutable double connectionGain;
+        mutable double SINRdB;
+
+        mutable VLCdevViewInfo lastView;
+
+        mutable std::map<transmissionKeys, double> transmissionInfo;
+
+
 
     public:
         static long unsigned int connectionCounter;
@@ -46,7 +66,7 @@ class VLCconnection {
         bool operator<(const VLCconnection &c2) const;
 
         // Updates the values used to calculate the SINR
-        void updateConnection();
+        void updateConnection() const;
 
         // Add a new value to the SINR trend
         void calculateNextValue();
@@ -56,6 +76,26 @@ class VLCconnection {
 
         // Abort this connection
         void abortConnection() const;
+
+        // Adds a noise source that can be another transmitter or an actual noise source
+        void addNoiseSource(VLCdevice * noiseSource) const;
+
+        // Recalculates the values for this noise source
+        void updateNoiseSource(VLCdevice * noiseSource) const;
+
+        // Removes the noise source from the map of this connection
+        void removeNoiseSource(VLCdevice * noiseSource);
+
+        // Calculates the total noise power
+        void calculateTotalNoise() const;
+
+
+        std::vector<VLCtimeSINR>& getSINRTrend();
+        std::map<transmissionKeys, double>& getTransmissionInfo();
+        const VLCdevViewInfo& getLastView() const;
+
+        unsigned long int getConnectionId() const;
+
 
     };
 

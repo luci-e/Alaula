@@ -16,14 +16,16 @@
 package vlc.src.VLCnode;
 import ned.DelayChannel;
 import ned.IdealChannel;
-import vlc.src.VLCnode.**.*;
+
+import vlc.src.VLCnode.*.*;
+import vlc.src.VLCnode.*.*.*;
+
 
 module VLCreceiverNode
 {
     parameters:
         string deviceParameters;
 
-        string mobilityType;
         string mobilityParameters;
         @display("bgb=257,170");
 
@@ -37,7 +39,7 @@ module VLCreceiverNode
                 @display("p=58,119");
         }
 
-        mobilityManager: <mobilityType> like VLCmobilityManager {
+        mobilityManager: VLCmobilityManager {
             mobilityPars = mobilityParameters;
             @display("p=186,119");
         }

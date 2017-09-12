@@ -40,13 +40,13 @@ namespace VLC{
         std::map <VLC::VLCdevice*, dataPacket*> transmitterMessages;
 
         // Holds all connections between a transmitter and receiver currently active
-        std::set <VLC::VLCconnection> VLCconnections;
+        mutable std::set <VLC::VLCconnection> VLCconnections;
 
         // A map between a device and the number of the gate that the channel uses to communicate with it
         std::map <VLC::VLCdevice*, int> VLCdeviceGates;
 
         // A map between a device and a set of VLCdevViewInfo structures, holding what's currently in view of the device
-        std::map <VLC::VLCdevice*, std::set<VLCdevViewInfo> *> VLCcurrentViews;
+        std::map <VLC::VLCdevice*, std::set<VLCdevViewInfo>*> VLCcurrentViews;
 
         virtual void initialize();
         virtual void handleMessage(cMessage *msg);
@@ -57,6 +57,9 @@ namespace VLC{
         // Compute all the necessary computations to step the simulation time forward, i.e., calculating the SINR for every
         // active connection
         void updateChannel();
+
+        // Recomputes the view for all the devices in the set
+        void recomputeView( std::set<VLCdevViewInfo> * devices);
 
         // Signal the channel that the transmitter has begun transmitting
         void startTransmission(VLCdevice * transmitter);

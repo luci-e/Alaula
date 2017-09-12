@@ -9,16 +9,18 @@
 #define VLCTRANSMITTER_H_
 
 #include <VLCdevice.h>
+#include <VLCemitter.h>
 #include <VLCpacket_m.h>
 #include <map>
 #include <string>
 
 namespace VLC{
-    class VLCtransmitter : public VLCdevice{
+    class VLCtransmitter : public VLCdevice, public VLCemitter{
         protected:
-            double lambertianOrder;
-            std::map<std::string, double> currentTransmissionInfo;
             dataPacket lastPacket;
+
+            // A set holding the connection this transmitter is currently in
+            mutable std::set<VLC::VLCconnection*> connectionStarts;
 
             void initialize() override;
             void handleMessage(cMessage *msg) override;
@@ -32,9 +34,11 @@ namespace VLC{
         public:
             VLCtransmitter(){};
             ~VLCtransmitter() {}
-            double getLambertianOrder() const;
-            std::map<std::string, double> getCurrentTransmissionInfo();
-    };
+
+            void addConnectionStart(VLCconnection * connection);
+            void removeConnectionStart(VLCconnection* connection);
+            std::set<VLC::VLCconnection*>& getConnectionStarts();
+};
     Define_Module(VLCtransmitter);
 }
 

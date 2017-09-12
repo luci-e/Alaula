@@ -26,6 +26,9 @@
 #include <Log.h>
 #include <VLCformatter.h>
 
+VLC::VLCchannel::VLCchannel() {}
+VLC::VLCchannel::~VLCchannel() {}
+
 void VLC::VLCchannel::initialize(){
     // Initialize the logger and the connection counter
     plog::init<plog::VLCformatter>(plog::none, par("logFolder"), 1000000, 1);
@@ -57,16 +60,20 @@ void VLC::VLCchannel::handleMessage(cMessage *msg){
                 this->endTransmission(transmitter);
                 break;
             }
+            case VLC_NOISE_MSG:{
+                VLCnoiseMsg *noiseMsg = dynamic_cast<VLCnoiseMsg*>(msg);
+                this->notifyChange((VLCdevice*) sim->getModule(noiseMsg->getNodeId()));
+                break;
+            }
         }
     }
     delete msg;
 };
 
-VLC::VLCchannel::VLCchannel() {}
-VLC::VLCchannel::~VLCchannel() {}
 
 // Adds a new device to the channel
 void VLC::VLCchannel::addDevice(VLCdevice* device, cGate *deviceGateIn, cGate *deviceGateOut) {
+    ev<<"Adding device "<<device->getId()<<"\n";
     this->VLCdevices.insert(device);
 
     // Expand the gateVector to accommodate the new device
@@ -85,11 +92,26 @@ void VLC::VLCchannel::addDevice(VLCdevice* device, cGate *deviceGateIn, cGate *d
     channelOut->callInitialize();
 
     // Recompute the state of the network
-    this->VLCcurrentViews[device] = new std::set<VLCdevViewInfo>();
-    //this->notifyChange(device);
+    this->VLCcurrentViews[device] = this->devicesInFoVOf(device);
+    this->recomputeView(this->VLCcurrentViews[device]);
 
     // Add the current view to the map
     VLCdeviceGates[device] = newGateVSize-1;
+}
+
+// Recomputes the view for all the devices in the set
+void VLC::VLCchannel::recomputeView(std::set<VLCdevViewInfo> * devices) {
+    std::pair<std::set<VLCdevViewInfo>::iterator, bool> viewResult;
+    VLCdevViewInfo reverseView;
+    for( auto &view : *devices){
+        VLCdevice* other = (VLCdevice*) this->sim->getModule(view.device2);
+        reverseView = invertedView(view);
+        viewResult = this->VLCcurrentViews[other]->insert(reverseView);
+        // If the element already existed update it
+        if(!viewResult.second){
+            (*viewResult.first).copyMutables(reverseView);
+        }
+    }
 }
 
 // Get the list of devices in the Field of View of the given device
@@ -138,7 +160,7 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
 
     devsPer.distance = distance(dev1Position, dev2Position);
 
-    ev<<"Devices distance is "<<devsPer.distance<<"\n";
+    //ev<<"Devices distance is "<<devsPer.distance<<"\n";
 
     // Calculate if the second device is in the FoV of the first one
     vector3d distanceVector = {dev2Position.x-dev1Position.x, dev2Position.y-dev1Position.y, dev2Position.z-dev1Position.z};
@@ -175,11 +197,28 @@ VLC::VLCdevViewInfo VLC::VLCchannel::devsPerspective(VLCdevice* device1, VLCdevi
 // Creates a connection between the tx and rx
 int VLC::VLCchannel::createConnection(VLCdevice * transmitter, VLCdevice * receiver) {
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
+    //ev<<"Creating connection\n";
     if( !conn ){
-        VLC::VLCconnection newConn(transmitter, receiver, this);
-        newConn.updateConnection();
-        newConn.calculateNextValue();
-        this->VLCconnections.insert(newConn);
+        std::pair<std::set<VLCconnection>::iterator, bool> inserted = this->VLCconnections.insert(VLCconnection(transmitter, receiver, this));
+
+       // Yeah cast that constness away, promise I won't change them
+        ((VLCtransmitter*) transmitter)->addConnectionStart(const_cast<VLCconnection*>(&(*inserted.first)));
+        ((VLCreceiver*) receiver)->addConnectionEnd(const_cast<VLCconnection*>(&(*inserted.first)));
+
+        // Add all the noise sources for this connection
+        for( auto& view : *this->VLCcurrentViews[receiver]){
+            VLCdevice* inView = (VLCdevice*) sim->getModule(view.device2);
+            if( inView != transmitter){
+                VLCdeviceType devType = inView->getDeviceType();
+                if( devType == TRANSMITTER_DEVICE || devType == NOISE_DEVICE ){
+                    inserted.first->addNoiseSource(inView);
+                }
+            }
+        }
+
+        inserted.first->updateConnection();
+        this->updateChannel();
+
         return 0;
     }
     return -1;
@@ -189,7 +228,11 @@ int VLC::VLCchannel::createConnection(VLCdevice * transmitter, VLCdevice * recei
 int VLC::VLCchannel::dropConnection(VLCdevice * transmitter, VLCdevice * receiver) {
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
     if(conn){
+
+        ((VLCtransmitter*) transmitter)->removeConnectionStart(conn);
+        ((VLCreceiver*) receiver)->removeConnectionEnd(conn);
         this->VLCconnections.erase((*conn));
+
         return 0;
     }
     return -1;
@@ -201,7 +244,10 @@ int VLC::VLCchannel::abortConnection(VLCdevice* transmitter, VLCdevice* receiver
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
     if(conn){
         conn->abortConnection();
+        ((VLCtransmitter*) transmitter)->removeConnectionStart(conn);
+        ((VLCreceiver*) receiver)->removeConnectionEnd(conn);
         this->VLCconnections.erase(*conn);
+
         ev<<"Erased the connection\n";
         return 0;
     }
@@ -236,7 +282,8 @@ void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
     dataPacket *pkt = this->transmitterMessages[transmitter];
 
     for( std::set <VLC::VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end();){
-        VLCconnection c = *conn;
+        VLCconnection &c = *const_cast<VLCconnection*>(&(*conn));
+        c.calculateNextValue();
         if(c.transmitter == transmitter){
             if( c.getOutcome() ){
                 cGate * receiverGate = gate("devicePort$o", this->VLCdeviceGates[const_cast<VLCdevice*>((VLCdevice*) c.receiver)]);
@@ -246,7 +293,10 @@ void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
             }
 
             // Close the connection
+            conn->receiver->removeConnectionEnd(const_cast<VLCconnection*>(&(*conn)));
+            conn->transmitter->removeConnectionStart(const_cast<VLCconnection*>(&(*conn)));
             this->VLCconnections.erase(conn++);
+
             continue;
         }
         conn++;
@@ -286,75 +336,149 @@ void VLC::VLCchannel::notifyChange(VLCdevice * device) {
     //ev<<"New devices\n";
     //printDevicesInFoV(&newDevices);
 
-    // Get the devices that went of the FoV of the device
+    // Get the devices that went out of the FoV of the device
     std::set<VLCdevViewInfo> outDevices;
     std::set_difference(oldView->begin(), oldView->end(), newView->begin(), newView->end(), std::inserter(outDevices, outDevices.begin()) );
 
     //ev<<"Out devices\n";
     //printDevicesInFoV(&outDevices);
 
+    // Get the devices that stayed into the FoV of the device
+    std::set<VLCdevViewInfo> devicesToUpdate;
+    std::set_difference(newView->begin(), newView->end(), newDevices.begin(), newDevices.end(),  std::inserter(devicesToUpdate, devicesToUpdate.begin()) );
+    std::set_difference(newView->begin(), newView->end(), outDevices.begin(), outDevices.end(),  std::inserter(devicesToUpdate, devicesToUpdate.begin()) );
+
+    //ev<<"Same devices\n";
+    //printDevicesInFoV(&deviceToUpdate);
 
     VLCdevViewInfo devInfo;
-    std::set<VLCconnection*> connectionsToUpdate;
+    VLCdeviceType devType = device->getDeviceType();
 
-    // Loop through the connections
-    if( device->getDeviceType() == TRANSMITTER_DEVICE ){
-        for(std::set<VLCconnection>::iterator c = this->VLCconnections.begin(); c != this->VLCconnections.end();){
-            VLCconnection *conn = const_cast<VLCconnection*>(&(*c));
-            // If it's part of this connection
-            if( conn->transmitter == device){
-                // Build a devViewInfo for this connection
-                devInfo = (VLCdevViewInfo) {conn->transmitter->getId(), conn->receiver->getId(), 0, 0.0, 0.0, 0.0};
-                // If it is one of the devices that have gone out of view delete it and abort the connection
-                if(outDevices.find(devInfo) != outDevices.end()){
-                    conn->abortConnection();
-                    this->VLCconnections.erase(c++);
-                    continue;
-                }else{
-                    connectionsToUpdate.insert(const_cast<VLCconnection*>(&(*c)));
-                }
+    if( devType == TRANSMITTER_DEVICE || devType == RECEIVER_DEVICE){
+        // Behold the power of ternary operators!
+        std::set<VLCconnection*> connectionSet = (devType == TRANSMITTER_DEVICE)?((VLCtransmitter*) device)->getConnectionStarts():((VLCreceiver*) device)->getConnectionEnds();
+
+        // Loop through the connections
+        for(std::set<VLCconnection*>::iterator c = connectionSet.begin(); c != connectionSet.end(); c++){
+            VLCconnection *conn = *c;
+            // Build a devViewInfo for this connection
+            devInfo = (VLCdevViewInfo) {conn->transmitter->getId(), conn->receiver->getId(), 0, 0.0, 0.0, 0.0};
+            // If it is one of the devices that have gone out of view delete it and abort the connection
+            if(outDevices.find(devInfo) != outDevices.end()){
+                conn->abortConnection();
+                ((VLCtransmitter*) device)->removeConnectionStart(conn);
+                ((VLCreceiver*) device)->removeConnectionEnd(conn);
+                this->VLCconnections.erase(*conn);
             }
-            c++;
-        }
-    }else if(device->getDeviceType() == RECEIVER_DEVICE){
-        for(std::set<VLCconnection>::iterator c = this->VLCconnections.begin(); c != this->VLCconnections.end();){
-            VLCconnection *conn = const_cast<VLCconnection*>(&(*c));
-            // If it's part of this connection
-            if( conn->receiver == device){
-                // Build a devViewInfo for this connection
-                devInfo = (VLCdevViewInfo) {conn->transmitter->getId(), conn->receiver->getId(), 0, 0.0, 0.0, 0.0};
-                // If it is one of the devices that have gone out of view delete it and abort the connection
-                if(outDevices.find(devInfo) != outDevices.end()){
-                    conn->abortConnection();
-                    this->VLCconnections.erase(c++);
-                    continue;
-                }else{
-                    connectionsToUpdate.insert(const_cast<VLCconnection*>(&(*c)));
-                }
-            }
-            c++;
         }
     }
 
-    // Update the view of all the objects that can now see each other
+
+    // Loop through the 3 new sets of:
+    // Devices that have come into the FoV
+    // Devices that stayed into the FoV
+    // Devices that have gone out of the FoV
+    // Perform the necessary actions for each case. These blocks are big and scary but ultimately they're just code repetition that could
+    // have been avoided if one wanted to be more elegant...
+
+    std::pair<std::set<VLCdevViewInfo>::iterator, bool> viewResult;
+    VLCdevViewInfo reverseView;
+
+    // Update the state of all the objects that can now see each other
     for( std::set<VLCdevViewInfo>::iterator newDevs = newDevices.begin(); newDevs != newDevices.end(); newDevs++){
-        this->VLCcurrentViews[(VLCdevice*) this->sim->getModule(newDevs->device2)]->insert(invertedView(*newDevs));
+        VLCdevice* newDevice = (VLCdevice*) this->sim->getModule(newDevs->device2);
+        reverseView = invertedView(*newDevs);
+        viewResult = this->VLCcurrentViews[newDevice]->insert(reverseView);
+        // If the element somehow already existed update it
+        if(!viewResult.second){
+            (*viewResult.first).copyMutables(reverseView);
+        }
+
+        VLCdeviceType newDeviceType = newDevice->getDeviceType();
+
+        // If the current device is an emitter and the new device is a receiver add it as a noise source to any connection the receiver has
+        if( (devType == TRANSMITTER_DEVICE || devType == NOISE_DEVICE) && ( newDeviceType == RECEIVER_DEVICE ) ){
+            const std::set<VLC::VLCconnection*>& receiverConnections = ((VLCreceiver*) newDevice)->getConnectionEnds();
+            for( auto& conn : receiverConnections){
+                conn->addNoiseSource(device);
+                conn->updateConnection();
+            }
+        }
+        // Else if the current device is a receiver add every new emitter device as a noise source to its connections
+        else if( (devType == RECEIVER_DEVICE)  && ( newDeviceType == TRANSMITTER_DEVICE || newDeviceType == NOISE_DEVICE ) ){
+            const std::set<VLC::VLCconnection*>& receiverConnections = ((VLCreceiver*) device)->getConnectionEnds();
+            for( auto& conn : receiverConnections){
+                conn->addNoiseSource(newDevice);
+                conn->updateConnection();
+            }
+        }
+    }
+
+    // Update the state of all the objects that can still see each other
+    for( std::set<VLCdevViewInfo>::iterator sameDevs = devicesToUpdate.begin(); sameDevs != devicesToUpdate.end(); sameDevs++){
+        VLCdevice* sameDevice = (VLCdevice*) this->sim->getModule(sameDevs->device2);
+        reverseView = invertedView(*sameDevs);
+        viewResult = this->VLCcurrentViews[sameDevice]->insert(reverseView);
+        // If the element already existed update it
+        if(!viewResult.second){
+            (*viewResult.first).copyMutables(reverseView);
+        }
+
+        VLCdeviceType sameDeviceType = sameDevice->getDeviceType();
+
+        // If the current device is an emitter and the device to update is a receiver update it as a noise source to any connection the receiver has
+        if( (devType == TRANSMITTER_DEVICE || devType == NOISE_DEVICE) && ( sameDeviceType == RECEIVER_DEVICE ) ){
+            const std::set<VLC::VLCconnection*>& receiverConnections = ((VLCreceiver*) sameDevice)->getConnectionEnds();
+            for( auto& conn : receiverConnections){
+                // If he's the transmitter then it can't be a noise device
+                if(conn->transmitter != device){
+                    conn->updateNoiseSource(device);
+                }
+                conn->updateConnection();
+            }
+        }
+        // Else if the current device is a receiver update every emitter device acting as a noise source to its connections
+        else if( (devType == RECEIVER_DEVICE)  && ( sameDeviceType == TRANSMITTER_DEVICE || sameDeviceType == NOISE_DEVICE ) ){
+            const std::set<VLC::VLCconnection*>& receiverConnections = ((VLCreceiver*) device)->getConnectionEnds();
+            for( auto& conn : receiverConnections){
+                // If the device is the transmitter then it can't be a noise device
+                if(conn->transmitter != sameDevice){
+                    conn->updateNoiseSource(sameDevice);
+                }
+                conn->updateConnection();
+            }
+        }
     }
 
     // Update the view of all the objects that can no longer see each other
     for( std::set<VLCdevViewInfo>::iterator outDevs = outDevices.begin(); outDevs != outDevices.end(); outDevs++){
-        this->VLCcurrentViews[(VLCdevice*) this->sim->getModule(outDevs->device2)]->erase(invertedView(*outDevs));
+        VLCdevice* outDevice = (VLCdevice*) this->sim->getModule(outDevs->device2);
+        reverseView = invertedView(*outDevs);
+        this->VLCcurrentViews[outDevice]->erase(reverseView);
+
+        VLCdeviceType outDeviceType = outDevice->getDeviceType();
+
+        // If the current device is an emitter and the out device is a receiver remove it from the noise sources of any connection the receiver has
+        if( (devType == TRANSMITTER_DEVICE || devType == NOISE_DEVICE) && ( outDeviceType == RECEIVER_DEVICE ) ){
+            const std::set<VLC::VLCconnection*>& receiverConnections = ((VLCreceiver*) outDevice)->getConnectionEnds();
+            for( auto& conn : receiverConnections){
+                conn->removeNoiseSource(device);
+                conn->updateConnection();
+            }
+        }
+        // Else if the current device is a receiver remove every out emitter device from the noise sources to its connections
+        else if( (devType == RECEIVER_DEVICE)  && ( outDeviceType == TRANSMITTER_DEVICE || outDeviceType == NOISE_DEVICE ) ){
+            const std::set<VLC::VLCconnection*>& receiverConnections = ((VLCreceiver*) device)->getConnectionEnds();
+            for( auto& conn : receiverConnections){
+                conn->removeNoiseSource(outDevice);
+                conn->updateConnection();
+            }
+        }
     }
 
     // Update the map for the device views
     delete this->VLCcurrentViews[device];
     this->VLCcurrentViews[device] = newView;
-
-    // Update the rest of the connections
-    for(std::set<VLCconnection*>::iterator c = connectionsToUpdate.begin(); c != connectionsToUpdate.end(); c++){
-        (*c)->updateConnection();
-        (*c)->calculateNextValue();
-    }
 
     // Update the channel
     this->updateChannel();
@@ -368,8 +492,16 @@ void VLC::VLCchannel::addMobility(cGate* mobilityGate) {
     c->callInitialize();
 }
 
+
 VLC::VLCdevViewInfo VLC::VLCchannel::getDevViewInfo(VLCdevice * transmitter, VLCdevice * receiver){
     // Build a devViewInfo for this connection
     VLCdevViewInfo devInfo = (VLCdevViewInfo) {transmitter->getId(), receiver->getId(), 0, 0.0, 0.0, 0.0};
-    return *(this->VLCcurrentViews[transmitter]->find(devInfo));
+    std::set<VLCdevViewInfo>::iterator devView = (this->VLCcurrentViews[transmitter]->find(devInfo));
+    if(devView == this->VLCcurrentViews[transmitter]->end()){
+        VLCdevViewInfo viewInfo = this->devsPerspective(transmitter, receiver);
+        this->VLCcurrentViews[transmitter]->insert(viewInfo);
+        return viewInfo;
+    }
+    return *devView;
+
 }

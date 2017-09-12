@@ -13,10 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.src.VLCnode.VLCdevice;
-@namespace(VLC);
+#include <VLCnoiseController/VLCnoiseController.h>
 
-simple VLCtransmitter extends VLCdevice
-{
-    @class(VLCtransmitter);
+
+VLC::VLCnoiseController::VLCnoiseController() {
+    // TODO Auto-generated constructor stub
+
 }
+
+VLC::VLCnoiseController::~VLCnoiseController() {
+    // TODO Auto-generated destructor stub
+}
+
+void VLC::VLCnoiseController::initialize() {
+    scheduleAt(simTime() + this->updateInterval, new cMessage());
+}
+
+void VLC::VLCnoiseController::handleMessage(cMessage* msg) {
+    if( !this->stepNoise(simTime().dbl()) ){
+        scheduleAt(simTime() + this->updateInterval, new cMessage());
+    }
+}
+
+

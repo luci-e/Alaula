@@ -12,25 +12,26 @@
 #include <map>
 #include <string>
 #include <VLCcommons.h>
+#include <VLCconnection.h>
 
 namespace VLC{
     // returns true if the packet can be successfully transmitter, false otherwise
-    bool packetTransmitted(std::vector<VLC::VLCtimeSINR> & SINRTrend, std::map<std::string, double> & transmissionInfo);
+    bool packetTransmitted(VLCconnection* conn);
 
     // Calculates the average SINR from the trend
     double averageSINR(std::vector<VLC::VLCtimeSINR> & SINRTrend);
 
     // Bit Error Rate for Variable Pulse Position Modulation
-    double BERVPPM(double avgSINR, std::map<std::string, double> & transmissionInfo);
+    double BERVPPM(VLCconnection* conn);
 
     // Symbol Error Rate for Pulse Amplitude Modulation
-    double SERPAM(double avgSINR, std::map<std::string, double> & transmissionInfo);
+    double SERPAM(VLCconnection* conn);
 
     // Packet Error Rate for Variable Pulse Position Modulation returns true if the randomly generated number is less than the PER
-    bool PERVPPM(double avgSINR, std::map<std::string, double> & transmissionInfo);
+    bool PERVPPM(VLCconnection* conn);
 
     // Packet Error Rate for Pulse Amplitude Modulation returns true if the randomly generated number is less than the PER
-    bool PERPAM(double avgSINR, std::map<std::string, double> & transmissionInfo);
+    bool PERPAM(VLCconnection* conn);
 }
 
 

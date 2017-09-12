@@ -13,12 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.src.VLCnode.VLCmobilityManager;
+package vlc.src.VLCnode.VLCdevice.VLCreceiver;
 @namespace(VLC);
 
-simple VLCmobilityManager{
-    parameters:
-        string mobilityPars;
+import vlc.src.VLCnode.VLCdevice.VLCdevice;
+
+simple VLCreceiver extends VLCdevice
+{
+    @class(VLCreceiver);  
     gates:
-        output channelPort @loose;
+        inout queuePort;           
 }

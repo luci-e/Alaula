@@ -24,18 +24,15 @@ void VLC::VLCreceiver::initialize(){
 }
 
 void VLC::VLCreceiver::handleMessage(cMessage *msg){
-    ev<<"Received something!\n";
-
     dataPacket * dp = (dataPacket*) msg;
 
     double duration = simTime().dbl() - dp->getTransmissionStartTime();
-    double dataRate = dp->getBitLength() / duration;
+    ev<<"Message is: "<<dp->getContent()<<" Transmission took "<<duration<<"ms\n";
 
     if(!msg->isSelfMessage()){
         VLCpacket *pkt = dynamic_cast<VLCpacket*>(msg);
     }
 
-    ev<<"Datarate is "<<dataRate<<"\n";
     delete msg;
 }
 
@@ -85,4 +82,16 @@ double VLC::VLCreceiver::getNoiseVariance(double Pr) const{
     + (16 * (M_PI * M_PI) * k * temp * gamma * (Cpd * Cpd) * (this->photoDetectorArea * this->photoDetectorArea) * I3 * (B * B * B) / gm);
 
     return shotVar + thermalVar;
+}
+
+void VLC::VLCreceiver::addConnectionEnd(VLCconnection* connection) {
+    this->connectionEnds.insert(connection);
+}
+
+std::set<VLC::VLCconnection*>& VLC::VLCreceiver::getConnectionEnds(){
+    return connectionEnds;
+}
+
+void VLC::VLCreceiver::removeConnectionEnd(VLCconnection* connection) {
+    this->connectionEnds.erase(connection);
 }

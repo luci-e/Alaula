@@ -10,6 +10,7 @@
 #include <omnetpp.h>
 #include <set>
 #include <cmath>
+#include <vector>
 
 
 namespace VLC{
@@ -93,7 +94,23 @@ namespace VLC{
 
     // The Q function
     double Qfunction(double x){
-        return 0.5 * erfc(-x * M_SQRT1_2);
+        return 0.5 * erfc(x / M_SQRT1_2);
+    }
+
+    // Explode the string into tokens with given delimiter, in rare cases explode the computer instead
+    const std::vector<std::string> explode(const std::string& s, const char& c)
+    {
+        std::string buff{""};
+        std::vector<std::string> v;
+
+        for(auto n:s)
+        {
+            if(n != c) buff+=n; else
+            if(n == c && buff != "") { v.push_back(buff); buff = ""; }
+        }
+        if(buff != "") v.push_back(buff);
+
+        return v;
     }
 }
 

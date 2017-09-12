@@ -29,7 +29,7 @@ VLCapp::~VLCapp() {
 }
 
 void VLC::VLCapp::initialize() {
-    scheduleAt(simTime() + 10, new cMessage());
+    scheduleAt(simTime(), new cMessage());
 }
 
 void VLC::VLCapp::handleMessage(cMessage* msg) {
@@ -40,6 +40,7 @@ void VLC::VLCapp::handleMessage(cMessage* msg) {
     newData->setModulationType(VPPM);
     newData->setDutyCycle(0.5);
     newData->setTransmissionPower(48.573);
+    newData->setContent(this->getName());
 
     send(newData, "appGate$o");
 

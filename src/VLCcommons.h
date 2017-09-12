@@ -12,6 +12,8 @@
 #include <string>
 #include <set>
 #include <simtime.h>
+#include <vector>
+#include <string>
 
 #define VLC_CHANNEL_NAME "vlcChannel"
 
@@ -34,9 +36,9 @@ namespace VLC{
 
     struct VLCdevViewInfo{
         int device1, device2;
-        bool seeEachOther;
-        double distance;
-        double angle1, angle2;
+        mutable bool seeEachOther;
+        mutable double distance;
+        mutable double angle1, angle2;
 
         inline bool operator()(const VLCdevViewInfo& vi1, const VLCdevViewInfo& vi2) const{
             if( vi1.device1 < vi2.device1 ){
@@ -75,6 +77,13 @@ namespace VLC{
             angle2 = other.angle2;
 
             return *this;
+        }
+
+        inline void copyMutables( VLC::VLCdevViewInfo& other ) const{
+            seeEachOther = other.seeEachOther;
+            distance = other.distance;
+            angle1 = other.angle1;
+            angle2 = other.angle2;
         }
     };
 
@@ -118,6 +127,10 @@ namespace VLC{
 
     // The Q function
     double Qfunction(double x);
+
+    // Explode the string into tokens with given delimiter, in rare cases explode the computer instead
+    const std::vector<std::string> explode(const std::string& s, const char& c);
+
 }
 
 #endif /* VLCCONSTS_H_ */

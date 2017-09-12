@@ -13,10 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.src.VLCnode.VLCdevice;
+package vlc.src.VLCnode.VLCdevice.VLCnoiseDevice;
 @namespace(VLC);
 
-simple VLCreceiver extends VLCdevice
+import vlc.src.VLCnode.VLCdevice.VLCdevice;
+
+simple VLCnoiseDevice extends VLCdevice
 {
-    @class(VLCreceiver);             
+    @class(VLCnoiseDevice);
+    gates:
+        inout controllerPort;
 }

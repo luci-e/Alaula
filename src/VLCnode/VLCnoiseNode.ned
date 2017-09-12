@@ -14,41 +14,39 @@
 // 
 
 package vlc.src.VLCnode;
+import ned.DelayChannel;
 import ned.IdealChannel;
 
 import vlc.src.VLCnode.*.*;
 import vlc.src.VLCnode.*.*.*;
 
-module VLCtransmitterNode
+
+module VLCnoiseNode
 {
     parameters:
         string deviceParameters;
 
         string mobilityParameters;
-        @display("bgb=271,165");
-
-    gates:
-        inout transmitterPort[];
+        
+        string noiseControllerType;
+        string noiseParameters;
+        @display("bgb=257,170");
 
     submodules:
-        device: VLCtransmitter {
+        device: VLCnoiseDevice {
             parameters:
                 devPars = deviceParameters;
-                @display("p=66,118");
+                @display("p=58,119");
         }
 
         mobilityManager: VLCmobilityManager {
             mobilityPars = mobilityParameters;
-            @display("p=198,118");
+            @display("p=186,119");
         }
-        
-        vlCnodeQueue: VLCnodeQueue {
-            @display("p=66,43;b=40,40");
+        vlCnoiseController: <noiseControllerType> like VLCnoiseController {
+            noisePars = noiseParameters;
+            @display("p=58,49;b=40,40");
         }
-        
     connections:
-        vlCnodeQueue.devicePort <--> device.queuePort;
-        for i=0..sizeof(transmitterPort)-1 {
-    		transmitterPort[i] <--> vlCnodeQueue.queuePort++;
-        }
+        vlCnoiseController.noiseDevicePort <--> device.controllerPort;
 }

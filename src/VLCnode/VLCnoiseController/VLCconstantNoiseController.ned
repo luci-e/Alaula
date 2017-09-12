@@ -13,12 +13,13 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.src.VLCnode.VLCmobilityManager;
+package vlc.src.VLCnode.VLCnoiseController;
+import vlc.src.VLCnode.VLCnoiseController.VLCnoiseController;
 @namespace(VLC);
 
-simple VLCmobilityManager{
+simple VLCconstantNoiseController like VLCnoiseController{   
     parameters:
-        string mobilityPars;
+        string noisePars;
     gates:
-        output channelPort @loose;
+        inout noiseDevicePort;
 }

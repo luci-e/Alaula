@@ -13,14 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package vlc.src.VLCnode.VLCmobilityManager;
-import vlc.src.VLCnode.VLCmobilityManager.VLCmobilityManager;
+#ifndef VLCNOISECONTROLLER_H_
+#define VLCNOISECONTROLLER_H_
 
-@namespace(VLC);
+#include <omnetpp.h>
 
-simple VLClineMobilityManager like VLCmobilityManager{
-    parameters:
-        string mobilityPars;
-    gates:
-        output channelPort @loose;
+namespace VLC{
+    class VLCnoiseController : public cSimpleModule{
+
+        protected:
+            double updateInterval = 10;
+
+            void initialize() override;
+            void handleMessage(cMessage *msg) override;
+
+            virtual bool stepNoise(double time) = 0;
+
+        public:
+            VLCnoiseController();
+            virtual ~VLCnoiseController();
+    };
 }
+
+#endif /* VLCNOISECONTROLLER_H_ */

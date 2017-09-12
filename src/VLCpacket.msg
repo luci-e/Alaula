@@ -21,6 +21,8 @@ enum VLCmsgType{
     
     VLC_CTRL_MSG = 3;
     VLC_DATA_MSG = 4;
+    
+    VLC_NOISE_MSG = 5;
 };
 
 enum VLCctrlCode{
@@ -56,8 +58,16 @@ packet VLCchannelSignalEnd extends VLCpacket{
     int nodeId;
 };
 
+packet VLCnoiseMsg extends VLCpacket{
+    int nodeId;
+};
+
 packet VLCctrlMsg extends VLCpacket{
     int ctrlCode @enum(VLCctrlCode);
+};
+
+packet VLCnoiseControlMsg extends VLCctrlMsg{
+    double noisePower;
 };
 
 packet dataPacket extends VLCpacket{

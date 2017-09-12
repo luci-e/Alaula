@@ -13,28 +13,14 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#ifndef VLCLINEMOBILITYMANAGER_H_
-#define VLCLINEMOBILITYMANAGER_H_
+package vlc.src.VLCnode.VLCdevice.VLCtransmitter;
+@namespace(VLC);
 
-#include <VLCmobilityManager.h>
+import vlc.src.VLCnode.VLCdevice.VLCdevice;
 
-namespace VLC{
-    class VLClineMobilityManager : public VLC::VLCmobilityManager{
-        protected:
-            void initialize();
-            void handleMessage(cMessage* cMsg);
-
-            double linearVelocity;
-            double xStep, yStep, zStep;
-            double alphaStep, betaStep;
-
-        public:
-            VLClineMobilityManager();
-            ~VLClineMobilityManager();
-
-            void stepMovement();
-    };
-    Define_Module(VLClineMobilityManager);
+simple VLCtransmitter extends VLCdevice
+{
+    @class(VLCtransmitter);
+    gates:
+        inout queuePort;
 }
-
-#endif /* VLCLINEMOBILITYMANAGER_H_ */

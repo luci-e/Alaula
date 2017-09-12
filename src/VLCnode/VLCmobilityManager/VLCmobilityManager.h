@@ -30,6 +30,11 @@ namespace VLC {
     class VLCchannel;
     class VLCdevice;
 
+    struct VLCwayPoint{
+        VLCnodePosition position;
+        double linearSpeed;
+    };
+
     class VLCmobilityManager: public ::cSimpleModule {
         protected:
             // The device that this moblityManager manages
@@ -39,33 +44,55 @@ namespace VLC {
             // The current node direction
             VLCnodeDirection nodeDirection;
 
+            // The list of wayPoints that the node must touch
+            std::vector<VLCwayPoint> wayPoints;
+            int currentWayPoint = 0, totalWayPoints = 0;
+
             // The target position at which the node will arrive at the end of the movement
             VLCnodePosition targetPosition;
+
+            double linearVelocity;
+            double xStep, yStep, zStep;
+            double alphaStep, betaStep;
 
             // The global VLCchannel
             VLCchannel* channel;
 
             // The time tick the position gets updated in ms
             double updateInterval = 10;
+            double initialDelay = 0;
 
             // Calculates the versor of the device
             void calculateDirection();
 
             void initialize();
-            virtual void handleMessage(cMessage *msg) = 0;
+            void handleMessage(cMessage *msg);
 
             // Notifies the channel of a movement
             void notifyChannel();
 
+            // Parse the file with the mobility parameters
+            void parseMobilityFile(std::string mobilityFilePath);
+
+            // Parse the string of waypoints into a list of waypoints
+            void parseWayPoints(std::string wayPointString);
+
+            // Calculates the values for the next movement
+            void calculateNextMovement();
+
+            // Call the function associated to the function name with fiven args
+            void callFunction(std::string funName, std::string funArgs);
+
+
         public:
-            virtual void stepMovement() = 0;
+            void stepMovement();
 
             void setTargetCoordinates(double x, double y, double z);
             void setTargetAngle(double alpha, double beta);
 
             void setNodePosition(VLCnodePosition nodePosition);
-            void setNodePosition(double x, double y, double z, double alpha,
-                    double beta);
+            void setNodePosition(double x, double y, double z, double alpha, double beta);
+            void setNodePosition(std::string nodePosition);
 
             const VLCnodePosition getNodePosition() const;
             void setDevice(VLCdevice * device);
@@ -73,6 +100,8 @@ namespace VLC {
             // Returns the unit vector pointing in the same direction as the device
             const VLCnodeDirection getNodeDirection() const;
     };
+
+    Define_Module(VLCmobilityManager);
 }
 
 
