@@ -85,7 +85,7 @@ namespace VLC{
             return charset[ rand() % max_index ];
         };
         char * str = new char[length];
-        for(int i = 0; i < length - 1; i++){
+        for(int i = 0; i < ((int)length) - 1; i++){
             str[i] = randchar();
         }
 

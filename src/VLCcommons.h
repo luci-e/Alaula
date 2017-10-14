@@ -18,6 +18,10 @@
 #define VLC_CHANNEL_NAME "vlcChannel"
 
 namespace VLC{
+
+    static const double q = 1.602176487e-19;        //electronic charge [Coulombs]
+    static const double k = 1.38064852e-23;     //Boltzmann constant [m^2 kg s^-2 K^-1]
+
     typedef struct VLCnodePosition{
         double x, y, z;
         double alpha, beta;
@@ -130,7 +134,6 @@ namespace VLC{
 
     // Explode the string into tokens with given delimiter, in rare cases explode the computer instead
     const std::vector<std::string> explode(const std::string& s, const char& c);
-
 }
 
 #endif /* VLCCONSTS_H_ */

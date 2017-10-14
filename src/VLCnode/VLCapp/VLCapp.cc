@@ -16,34 +16,90 @@
 #include <VLCapp/VLCapp.h>
 #include <VLCpacket_m.h>
 #include <omnetpp.h>
+#include <ctime>
+#include <cstdlib>
+#include <Log.h>
 
 using namespace VLC;
 
-VLCapp::VLCapp() {
-    // TODO Auto-generated constructor stub
-
-}
-
-VLCapp::~VLCapp() {
-    // TODO Auto-generated destructor stub
-}
+VLCapp::VLCapp() {}
+VLCapp::~VLCapp() {}
 
 void VLC::VLCapp::initialize() {
-    scheduleAt(simTime(), new cMessage());
+    if(par("type").doubleValue() == 1.0){
+        this->destinationAddresses = cStringTokenizer(par("destinationAddresses").stringValue()).asDoubleVector();
+
+        VLCctrlMsg * newPkt = new VLCctrlMsg();
+        newPkt->setMessageType(VLC_CTRL_MSG);
+        newPkt->setCtrlCode(NEW_PACKET);
+
+        scheduleAt(simTime(), newPkt);
+    }else{
+        VLCpacket * logPkt = new VLCpacket();
+        logPkt->setMessageType(-1);
+
+        scheduleAt(simTime(), logPkt);
+    }
+
+    this->address = par("address");
+
+    srand(time(NULL));
+
 }
 
 void VLC::VLCapp::handleMessage(cMessage* msg) {
-    dataPacket *newData = new dataPacket();
+    VLCpacket* pkt = (VLCpacket*) msg;
 
-    newData->setMessageType(VLC_DATA_MSG);
-    newData->setByteLength(this->packetSize);
-    newData->setModulationType(VPPM);
-    newData->setDutyCycle(0.5);
-    newData->setTransmissionPower(48.573);
-    newData->setContent(this->getName());
+    switch(pkt->getMessageType()){
+        case VLC_DATA_MSG:{
+            ev<<"Received a packet for "<<this->address<<"\n";
+            dataPacket *dp = (dataPacket*) msg;
+            //double duration = simTime().dbl() - dp->getTransmissionStartTime();
+            this->totalReceivedData += dp->getByteLength();
+            //ev<<"Received a packet for "<<this->address<<" total data is "<<this->totalReceivedData<<"\n";
+            delete msg;
+            break;
+        }
 
-    send(newData, "appGate$o");
+        case VLC_CTRL_MSG:{
+            VLCctrlMsg * ctrl = (VLCctrlMsg*) pkt;
+            switch(ctrl->getCtrlCode()){
+                case NEW_PACKET:{
+                    dataPacket *newData = new dataPacket();
 
-    scheduleAt( simTime() + this->transmissionInterval, new cMessage() );
-    delete msg;
+                    newData->setMessageType(VLC_DATA_MSG);
+                    newData->setByteLength(this->packetSize);
+                    newData->setModulationType(VPPM);
+                    newData->setDutyCycle(0.5);
+                    newData->setTransmissionPower(1.0);
+                    newData->setContent(this->getName());
+
+                    int destAddress = (int) this->destinationAddresses[rand() % this->destinationAddresses.size()];
+                    newData->setDestinationAddress(destAddress);
+
+                    send(newData, "appGate$o", 0);
+
+                    scheduleAt( simTime() + this->transmissionInterval, ctrl);
+                    break;
+                }
+            }
+            break;
+        }
+
+        default:{
+            LOGN_(2)   << this->address << ";"\
+                   << 0 << ";"\
+                   << 0 << ";"\
+                   << simTime().dbl()<< ";"\
+                   << "Data" << ";"\
+                   << this->totalReceivedData << ";"\
+                   << 0 << ";"\
+                   << 0 << ";"\
+                   << 0 << ";"\
+                   << 0 << ";"\
+                   << 0;
+            scheduleAt( simTime() + this->logUpdateInterval, pkt);
+            break;
+        }
+    }
 }

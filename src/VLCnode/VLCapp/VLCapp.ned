@@ -22,8 +22,11 @@ package vlc.src.VLCnode.VLCapp;
 simple VLCapp{
     parameters:
         @display("i=block/browser");
+        int type;
+        int address;
+        string destinationAddresses;
     gates:
-        inout appGate;
+        inout appGate[];
 }
 
 

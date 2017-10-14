@@ -25,30 +25,26 @@ module VLCreceiverNode
 {
     parameters:
         string deviceParameters;
+        int receiverAddress;
 
         string mobilityParameters;
-        @display("bgb=257,170");
+        @display("bgb=225,86");
 
     gates:
-        inout receiverPort[];
+        inout receiverPort;
 
     submodules:
         device: VLCreceiver {
             parameters:
                 devPars = deviceParameters;
-                @display("p=58,119");
+                address = receiverAddress;
+                @display("p=47,35");
         }
 
         mobilityManager: VLCmobilityManager {
             mobilityPars = mobilityParameters;
-            @display("p=186,119");
-        }
-        vlCnodeQueue: VLCnodeQueue {
-            @display("p=58,38;b=40,41");
+            @display("p=150,35");
         }
     connections:
-        vlCnodeQueue.devicePort <--> device.queuePort;
-        for i=0..sizeof(receiverPort)-1 {
-    		receiverPort[i] <--> vlCnodeQueue.queuePort++;
-        }
+        receiverPort <--> device.controllerPort;
 }

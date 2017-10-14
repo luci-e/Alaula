@@ -32,6 +32,8 @@ class VLCconnection {
     };
 
     private:
+        double SINRthreshold = 15;
+
         long unsigned int connectionId;
         mutable std::vector<VLCtimeSINR> SINRTrend;
 

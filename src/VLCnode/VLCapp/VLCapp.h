@@ -21,8 +21,15 @@
 namespace VLC{
     class VLCapp : public ::cSimpleModule{
         private:
-            int packetSize = 8;
-            double transmissionInterval = 1;
+            int address;
+            int packetSize = 1024;
+            double transmissionInterval = 0.333333333;
+            std::vector<double> destinationAddresses;
+
+            int64 totalReceivedData = 0;
+            double startThroughputTime = 0;
+            double logUpdateInterval = 5;
+
         public:
             VLCapp();
             virtual ~VLCapp();

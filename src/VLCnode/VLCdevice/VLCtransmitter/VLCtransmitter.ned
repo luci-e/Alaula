@@ -20,7 +20,9 @@ import vlc.src.VLCnode.VLCdevice.VLCdevice;
 
 simple VLCtransmitter extends VLCdevice
 {
-    @class(VLCtransmitter);
+    parameters:
+       	@class(VLCtransmitter);
+        int address;
     gates:
-        inout queuePort;
+        inout controllerPort;
 }

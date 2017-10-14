@@ -21,54 +21,83 @@
  * enum VLCmsgType
  * {
  * 
- *     VLC_MOVE_MSG = 0;
- * 
- *     VLC_SIG_BEGIN_MSG = 1;
- *     VLC_SIG_END_MSG = 2;
- * 
- *     VLC_CTRL_MSG = 3;
- *     VLC_DATA_MSG = 4;
- * 
- *     VLC_NOISE_MSG = 5;
+ *     VLC_CTRL_MSG = 0;
+ *     VLC_DATA_MSG = 1;
+ *     VLC_MAC_MSG = 2;
  * }
  * </pre>
  */
 enum VLCmsgType {
-    VLC_MOVE_MSG = 0,
-    VLC_SIG_BEGIN_MSG = 1,
-    VLC_SIG_END_MSG = 2,
-    VLC_CTRL_MSG = 3,
-    VLC_DATA_MSG = 4,
-    VLC_NOISE_MSG = 5
+    VLC_CTRL_MSG = 0,
+    VLC_DATA_MSG = 1,
+    VLC_MAC_MSG = 2
 };
 
 /**
- * Enum generated from <tt>src/VLCpacket.msg:28</tt> by nedtool.
+ * Enum generated from <tt>src/VLCpacket.msg:22</tt> by nedtool.
  * <pre>
  * enum VLCctrlCode
  * {
  * 
  *     // Codes for the status of the transmission
- *     TRANSMISSION_DONE = 0;
- *     TRANSMISSION_ABORTED = 1;
+ *     TRANSMISSION_BEGIN = 0;
+ *     TRANSMISSION_END = 1;
+ *     TRANSMISSION_ABORT = 2;
+ * 
  * 
  *     // Codes for the status of the device		
- *     DEVICE_BUSY = 2;
+ *     DEVICE_BUSY = 3;
+ *     DEVICE_MOVED = 4;
+ *     NOISE_DEVICE_CHANGED = 5;
  * 
  *     // Codes for controlling the transmission
- *     ABORT_TRANSMISSION = 3;
+ *     ABORT_TRANSMISSION = 6;
+ * 
+ *     // Codes for controlling the transmission
+ *     VPPM_CYCLE_DOWN = 7;
+ * 
+ *     // Codes for the app
+ *     NEW_PACKET = 8;
+ * 
+ *     //Codes for the receiver
+ *     CHECK_BEACON = 9;
+ * 
  * }
  * </pre>
  */
 enum VLCctrlCode {
-    TRANSMISSION_DONE = 0,
-    TRANSMISSION_ABORTED = 1,
-    DEVICE_BUSY = 2,
-    ABORT_TRANSMISSION = 3
+    TRANSMISSION_BEGIN = 0,
+    TRANSMISSION_END = 1,
+    TRANSMISSION_ABORT = 2,
+    DEVICE_BUSY = 3,
+    DEVICE_MOVED = 4,
+    NOISE_DEVICE_CHANGED = 5,
+    ABORT_TRANSMISSION = 6,
+    VPPM_CYCLE_DOWN = 7,
+    NEW_PACKET = 8,
+    CHECK_BEACON = 9
 };
 
 /**
- * Enum generated from <tt>src/VLCpacket.msg:40</tt> by nedtool.
+ * Enum generated from <tt>src/VLCpacket.msg:48</tt> by nedtool.
+ * <pre>
+ * enum VLCMACCode
+ * {
+ * 
+ *     BEACON_MSG = 0;
+ *     SUBSCRIBE_MSG = 1;
+ *     UNSUBSCRIBE_MSG = 2;
+ * }
+ * </pre>
+ */
+enum VLCMACCode {
+    BEACON_MSG = 0,
+    SUBSCRIBE_MSG = 1,
+    UNSUBSCRIBE_MSG = 2
+};
+
+/**
+ * Enum generated from <tt>src/VLCpacket.msg:54</tt> by nedtool.
  * <pre>
  * enum VLCmodulationType
  * {
@@ -84,7 +113,7 @@ enum VLCmodulationType {
 };
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:45</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:59</tt> by nedtool.
  * <pre>
  * packet VLCpacket
  * {
@@ -122,162 +151,12 @@ inline void doPacking(cCommBuffer *b, VLCpacket& obj) {obj.parsimPack(b);}
 inline void doUnpacking(cCommBuffer *b, VLCpacket& obj) {obj.parsimUnpack(b);}
 
 /**
- * Class generated from <tt>src/VLCpacket.msg:49</tt> by nedtool.
- * <pre>
- * packet VLCmoveMsg extends VLCpacket
- * {
- *     int nodeId;
- * }
- * </pre>
- */
-class VLCmoveMsg : public ::VLCpacket
-{
-  protected:
-    int nodeId_var;
-
-  private:
-    void copy(const VLCmoveMsg& other);
-
-  protected:
-    // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCmoveMsg&);
-
-  public:
-    VLCmoveMsg(const char *name=NULL, int kind=0);
-    VLCmoveMsg(const VLCmoveMsg& other);
-    virtual ~VLCmoveMsg();
-    VLCmoveMsg& operator=(const VLCmoveMsg& other);
-    virtual VLCmoveMsg *dup() const {return new VLCmoveMsg(*this);}
-    virtual void parsimPack(cCommBuffer *b);
-    virtual void parsimUnpack(cCommBuffer *b);
-
-    // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
-};
-
-inline void doPacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCmoveMsg& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>src/VLCpacket.msg:53</tt> by nedtool.
- * <pre>
- * packet VLCchannelSignalBegin extends VLCpacket
- * {
- *     int nodeId;
- * }
- * </pre>
- */
-class VLCchannelSignalBegin : public ::VLCpacket
-{
-  protected:
-    int nodeId_var;
-
-  private:
-    void copy(const VLCchannelSignalBegin& other);
-
-  protected:
-    // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCchannelSignalBegin&);
-
-  public:
-    VLCchannelSignalBegin(const char *name=NULL, int kind=0);
-    VLCchannelSignalBegin(const VLCchannelSignalBegin& other);
-    virtual ~VLCchannelSignalBegin();
-    VLCchannelSignalBegin& operator=(const VLCchannelSignalBegin& other);
-    virtual VLCchannelSignalBegin *dup() const {return new VLCchannelSignalBegin(*this);}
-    virtual void parsimPack(cCommBuffer *b);
-    virtual void parsimUnpack(cCommBuffer *b);
-
-    // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
-};
-
-inline void doPacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCchannelSignalBegin& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>src/VLCpacket.msg:57</tt> by nedtool.
- * <pre>
- * packet VLCchannelSignalEnd extends VLCpacket
- * {
- *     int nodeId;
- * }
- * </pre>
- */
-class VLCchannelSignalEnd : public ::VLCpacket
-{
-  protected:
-    int nodeId_var;
-
-  private:
-    void copy(const VLCchannelSignalEnd& other);
-
-  protected:
-    // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCchannelSignalEnd&);
-
-  public:
-    VLCchannelSignalEnd(const char *name=NULL, int kind=0);
-    VLCchannelSignalEnd(const VLCchannelSignalEnd& other);
-    virtual ~VLCchannelSignalEnd();
-    VLCchannelSignalEnd& operator=(const VLCchannelSignalEnd& other);
-    virtual VLCchannelSignalEnd *dup() const {return new VLCchannelSignalEnd(*this);}
-    virtual void parsimPack(cCommBuffer *b);
-    virtual void parsimUnpack(cCommBuffer *b);
-
-    // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
-};
-
-inline void doPacking(cCommBuffer *b, VLCchannelSignalEnd& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCchannelSignalEnd& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>src/VLCpacket.msg:61</tt> by nedtool.
- * <pre>
- * packet VLCnoiseMsg extends VLCpacket
- * {
- *     int nodeId;
- * }
- * </pre>
- */
-class VLCnoiseMsg : public ::VLCpacket
-{
-  protected:
-    int nodeId_var;
-
-  private:
-    void copy(const VLCnoiseMsg& other);
-
-  protected:
-    // protected and unimplemented operator==(), to prevent accidental usage
-    bool operator==(const VLCnoiseMsg&);
-
-  public:
-    VLCnoiseMsg(const char *name=NULL, int kind=0);
-    VLCnoiseMsg(const VLCnoiseMsg& other);
-    virtual ~VLCnoiseMsg();
-    VLCnoiseMsg& operator=(const VLCnoiseMsg& other);
-    virtual VLCnoiseMsg *dup() const {return new VLCnoiseMsg(*this);}
-    virtual void parsimPack(cCommBuffer *b);
-    virtual void parsimUnpack(cCommBuffer *b);
-
-    // field getter/setter methods
-    virtual int getNodeId() const;
-    virtual void setNodeId(int nodeId);
-};
-
-inline void doPacking(cCommBuffer *b, VLCnoiseMsg& obj) {obj.parsimPack(b);}
-inline void doUnpacking(cCommBuffer *b, VLCnoiseMsg& obj) {obj.parsimUnpack(b);}
-
-/**
- * Class generated from <tt>src/VLCpacket.msg:65</tt> by nedtool.
+ * Class generated from <tt>src/VLCpacket.msg:63</tt> by nedtool.
  * <pre>
  * packet VLCctrlMsg extends VLCpacket
  * {
+ *     int nodeId;
+ *     int nodeAddress;
  *     int ctrlCode @enum(VLCctrlCode);
  * }
  * </pre>
@@ -285,6 +164,8 @@ inline void doUnpacking(cCommBuffer *b, VLCnoiseMsg& obj) {obj.parsimUnpack(b);}
 class VLCctrlMsg : public ::VLCpacket
 {
   protected:
+    int nodeId_var;
+    int nodeAddress_var;
     int ctrlCode_var;
 
   private:
@@ -304,6 +185,10 @@ class VLCctrlMsg : public ::VLCpacket
     virtual void parsimUnpack(cCommBuffer *b);
 
     // field getter/setter methods
+    virtual int getNodeId() const;
+    virtual void setNodeId(int nodeId);
+    virtual int getNodeAddress() const;
+    virtual void setNodeAddress(int nodeAddress);
     virtual int getCtrlCode() const;
     virtual void setCtrlCode(int ctrlCode);
 };
@@ -352,6 +237,110 @@ inline void doUnpacking(cCommBuffer *b, VLCnoiseControlMsg& obj) {obj.parsimUnpa
 /**
  * Class generated from <tt>src/VLCpacket.msg:73</tt> by nedtool.
  * <pre>
+ * packet VLCMACMsg extends VLCpacket
+ * {
+ *     int MACCode @enum(VLCMACCode);
+ *     int transmitterNodeId;
+ *     int transmitterNodeAddress;
+ *     int receiverNodeIde;
+ *     int receiverNodeAddress;
+ * }
+ * </pre>
+ */
+class VLCMACMsg : public ::VLCpacket
+{
+  protected:
+    int MACCode_var;
+    int transmitterNodeId_var;
+    int transmitterNodeAddress_var;
+    int receiverNodeIde_var;
+    int receiverNodeAddress_var;
+
+  private:
+    void copy(const VLCMACMsg& other);
+
+  protected:
+    // protected and unimplemented operator==(), to prevent accidental usage
+    bool operator==(const VLCMACMsg&);
+
+  public:
+    VLCMACMsg(const char *name=NULL, int kind=0);
+    VLCMACMsg(const VLCMACMsg& other);
+    virtual ~VLCMACMsg();
+    VLCMACMsg& operator=(const VLCMACMsg& other);
+    virtual VLCMACMsg *dup() const {return new VLCMACMsg(*this);}
+    virtual void parsimPack(cCommBuffer *b);
+    virtual void parsimUnpack(cCommBuffer *b);
+
+    // field getter/setter methods
+    virtual int getMACCode() const;
+    virtual void setMACCode(int MACCode);
+    virtual int getTransmitterNodeId() const;
+    virtual void setTransmitterNodeId(int transmitterNodeId);
+    virtual int getTransmitterNodeAddress() const;
+    virtual void setTransmitterNodeAddress(int transmitterNodeAddress);
+    virtual int getReceiverNodeIde() const;
+    virtual void setReceiverNodeIde(int receiverNodeIde);
+    virtual int getReceiverNodeAddress() const;
+    virtual void setReceiverNodeAddress(int receiverNodeAddress);
+};
+
+inline void doPacking(cCommBuffer *b, VLCMACMsg& obj) {obj.parsimPack(b);}
+inline void doUnpacking(cCommBuffer *b, VLCMACMsg& obj) {obj.parsimUnpack(b);}
+
+/**
+ * Class generated from <tt>src/VLCpacket.msg:81</tt> by nedtool.
+ * <pre>
+ * packet VLCBeaconMsg extends VLCMACMsg
+ * {
+ *     int modulationType @enum(VLCmodulationType);
+ *     double transmissionPower;
+ *     int modulationOrder;
+ *     double dutyCycle;
+ * }
+ * </pre>
+ */
+class VLCBeaconMsg : public ::VLCMACMsg
+{
+  protected:
+    int modulationType_var;
+    double transmissionPower_var;
+    int modulationOrder_var;
+    double dutyCycle_var;
+
+  private:
+    void copy(const VLCBeaconMsg& other);
+
+  protected:
+    // protected and unimplemented operator==(), to prevent accidental usage
+    bool operator==(const VLCBeaconMsg&);
+
+  public:
+    VLCBeaconMsg(const char *name=NULL, int kind=0);
+    VLCBeaconMsg(const VLCBeaconMsg& other);
+    virtual ~VLCBeaconMsg();
+    VLCBeaconMsg& operator=(const VLCBeaconMsg& other);
+    virtual VLCBeaconMsg *dup() const {return new VLCBeaconMsg(*this);}
+    virtual void parsimPack(cCommBuffer *b);
+    virtual void parsimUnpack(cCommBuffer *b);
+
+    // field getter/setter methods
+    virtual int getModulationType() const;
+    virtual void setModulationType(int modulationType);
+    virtual double getTransmissionPower() const;
+    virtual void setTransmissionPower(double transmissionPower);
+    virtual int getModulationOrder() const;
+    virtual void setModulationOrder(int modulationOrder);
+    virtual double getDutyCycle() const;
+    virtual void setDutyCycle(double dutyCycle);
+};
+
+inline void doPacking(cCommBuffer *b, VLCBeaconMsg& obj) {obj.parsimPack(b);}
+inline void doUnpacking(cCommBuffer *b, VLCBeaconMsg& obj) {obj.parsimUnpack(b);}
+
+/**
+ * Class generated from <tt>src/VLCpacket.msg:88</tt> by nedtool.
+ * <pre>
  * packet dataPacket extends VLCpacket
  * {
  *     int modulationType @enum(VLCmodulationType);
@@ -360,6 +349,8 @@ inline void doUnpacking(cCommBuffer *b, VLCnoiseControlMsg& obj) {obj.parsimUnpa
  *     double dutyCycle;
  *     string content;
  *     double transmissionStartTime;
+ *     int sourceAddress;
+ *     int destinationAddress;
  * }
  * </pre>
  */
@@ -372,6 +363,8 @@ class dataPacket : public ::VLCpacket
     double dutyCycle_var;
     opp_string content_var;
     double transmissionStartTime_var;
+    int sourceAddress_var;
+    int destinationAddress_var;
 
   private:
     void copy(const dataPacket& other);
@@ -402,6 +395,10 @@ class dataPacket : public ::VLCpacket
     virtual void setContent(const char * content);
     virtual double getTransmissionStartTime() const;
     virtual void setTransmissionStartTime(double transmissionStartTime);
+    virtual int getSourceAddress() const;
+    virtual void setSourceAddress(int sourceAddress);
+    virtual int getDestinationAddress() const;
+    virtual void setDestinationAddress(int destinationAddress);
 };
 
 inline void doPacking(cCommBuffer *b, dataPacket& obj) {obj.parsimPack(b);}

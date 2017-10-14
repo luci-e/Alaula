@@ -31,7 +31,13 @@ VLC::VLCchannel::~VLCchannel() {}
 
 void VLC::VLCchannel::initialize(){
     // Initialize the logger and the connection counter
-    plog::init<plog::VLCformatter>(plog::none, par("logFolder"), 1000000, 1);
+
+    std::string logFolder= par("logFolder").stdstringValue();
+
+    plog::init<plog::VLCformatter>(plog::none, (logFolder+"SINRdata.csv").c_str(), 1000000, 1);
+    plog::init<plog::VLCformatter, 1>(plog::none, (logFolder+"BERdata.csv").c_str(), 1000000, 1);
+    plog::init<plog::VLCformatter, 2>(plog::none, (logFolder+"throughputData.csv").c_str(), 1000000, 1);
+
     scheduleAt(simTime() + this->updateInterval, new cMessage());
 };
 
@@ -42,28 +48,34 @@ void VLC::VLCchannel::handleMessage(cMessage *msg){
     }else{
         VLCpacket *chMsg = dynamic_cast<VLCpacket*>(msg);
         switch(chMsg->getMessageType()){
-            case VLC_MOVE_MSG:{
-                VLCmoveMsg *moveMsg = dynamic_cast<VLCmoveMsg*>(msg);
-                this->notifyChange((VLCdevice*)sim->getModule(moveMsg->getNodeId()));
-                break;
-            }
-            case VLC_SIG_BEGIN_MSG:{
-                VLCchannelSignalBegin *msgBegin = dynamic_cast<VLCchannelSignalBegin*>(msg);
-                VLCdevice * transmitter = (VLCdevice*) sim->getModule(msgBegin->getNodeId());
-                this->transmitterMessages[transmitter] = dynamic_cast<dataPacket*>(msgBegin->decapsulate());
-                this->startTransmission(transmitter);
-                break;
-            }
-            case VLC_SIG_END_MSG:{
-                VLCchannelSignalEnd *msgEnd = dynamic_cast<VLCchannelSignalEnd*>(msg);
-                VLCdevice * transmitter = (VLCdevice*) sim->getModule(msgEnd->getNodeId());
-                this->endTransmission(transmitter);
-                break;
-            }
-            case VLC_NOISE_MSG:{
-                VLCnoiseMsg *noiseMsg = dynamic_cast<VLCnoiseMsg*>(msg);
-                this->notifyChange((VLCdevice*) sim->getModule(noiseMsg->getNodeId()));
-                break;
+            case VLC_CTRL_MSG:{
+                VLCctrlMsg* ctrlMsg = dynamic_cast<VLCctrlMsg*>(msg);
+                switch(ctrlMsg->getCtrlCode()){
+                    case DEVICE_MOVED:{
+                        this->notifyChange((VLCdevice*)sim->getModule(ctrlMsg->getNodeId()));
+                        break;
+                    }
+                    case TRANSMISSION_BEGIN:{
+                        VLCdevice * transmitter = (VLCdevice*) sim->getModule(ctrlMsg->getNodeId());
+                        this->transmitterMessages[transmitter] = dynamic_cast<VLCpacket*>(ctrlMsg->decapsulate());
+                        this->startTransmission(transmitter);
+                        break;
+                    }
+                    case TRANSMISSION_END:{
+                        VLCdevice * transmitter = (VLCdevice*) sim->getModule(ctrlMsg->getNodeId());
+                        this->endTransmission(transmitter);
+                        break;
+                    }
+                    case TRANSMISSION_ABORT:{
+                        VLCdevice * transmitter = (VLCdevice*) sim->getModule(ctrlMsg->getNodeId());
+                        this->abortTransmission(transmitter);
+                        break;
+                    }
+                    case NOISE_DEVICE_CHANGED:{
+                        this->notifyChange((VLCdevice*) sim->getModule(ctrlMsg->getNodeId()));
+                        break;
+                    }
+                }
             }
         }
     }
@@ -241,18 +253,19 @@ int VLC::VLCchannel::dropConnection(VLCdevice * transmitter, VLCdevice * receive
 // Aborts the connection between tx and rx because the devices are no longer able to communicate
 // this can be because they are too far apart or no longer in their respective FoVs
 int VLC::VLCchannel::abortConnection(VLCdevice* transmitter, VLCdevice* receiver) {
+    Enter_Method("abortConnection()");
     VLC::VLCconnection* conn = this->connectionExists(transmitter, receiver);
     if(conn){
         conn->abortConnection();
         ((VLCtransmitter*) transmitter)->removeConnectionStart(conn);
         ((VLCreceiver*) receiver)->removeConnectionEnd(conn);
         this->VLCconnections.erase(*conn);
-
-        ev<<"Erased the connection\n";
         return 0;
     }
     return -1;
 }
+
+
 
 // Returns the connection between the devices if it exists, NULL otherwise
 VLC::VLCconnection* VLC::VLCchannel::connectionExists(VLCdevice * transmitter, VLCdevice * receiver) {
@@ -279,13 +292,14 @@ void VLC::VLCchannel::startTransmission(VLCdevice* transmitter) {
 // Signal the channel that the transmitter has stopped transmitting
 void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
     // Get this transmitter packet
-    dataPacket *pkt = this->transmitterMessages[transmitter];
+    VLCpacket *pkt = this->transmitterMessages[transmitter];
 
     for( std::set <VLC::VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end();){
         VLCconnection &c = *const_cast<VLCconnection*>(&(*conn));
         c.calculateNextValue();
         if(c.transmitter == transmitter){
             if( c.getOutcome() ){
+                ev<<"Packet transmitted\n";
                 cGate * receiverGate = gate("devicePort$o", this->VLCdeviceGates[const_cast<VLCdevice*>((VLCdevice*) c.receiver)]);
                 send(pkt->dup(), receiverGate);
             }else{
@@ -297,6 +311,26 @@ void VLC::VLCchannel::endTransmission(VLCdevice* transmitter) {
             conn->transmitter->removeConnectionStart(const_cast<VLCconnection*>(&(*conn)));
             this->VLCconnections.erase(conn++);
 
+            continue;
+        }
+        conn++;
+    }
+
+    // Free the packet and remove it from the map
+    delete this->transmitterMessages[transmitter];
+    this->transmitterMessages.erase(transmitter);
+}
+
+// Signal the channel that the device has abruptly stopped transmitting
+void VLC::VLCchannel::abortTransmission(VLCdevice* transmitter) {
+    for( std::set <VLC::VLCconnection>::iterator conn = this->VLCconnections.begin(); conn != this->VLCconnections.end();){
+        VLCconnection &c = *const_cast<VLCconnection*>(&(*conn));
+        if(c.transmitter == transmitter){
+            // Close the connection
+            conn->abortConnection();
+            conn->receiver->removeConnectionEnd(const_cast<VLCconnection*>(&(*conn)));
+            conn->transmitter->removeConnectionStart(const_cast<VLCconnection*>(&(*conn)));
+            this->VLCconnections.erase(conn++);
             continue;
         }
         conn++;

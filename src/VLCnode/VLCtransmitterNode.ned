@@ -23,32 +23,27 @@ module VLCtransmitterNode
 {
     parameters:
         string deviceParameters;
+        int transmitterAddress;
 
         string mobilityParameters;
-        @display("bgb=271,165");
+        @display("bgb=217,92");
 
     gates:
-        inout transmitterPort[];
+        inout transmitterPort;
 
     submodules:
         device: VLCtransmitter {
             parameters:
                 devPars = deviceParameters;
-                @display("p=66,118");
+                address = transmitterAddress;
+                @display("p=45,39");
         }
 
         mobilityManager: VLCmobilityManager {
             mobilityPars = mobilityParameters;
-            @display("p=198,118");
+            @display("p=144,39");
         }
-        
-        vlCnodeQueue: VLCnodeQueue {
-            @display("p=66,43;b=40,40");
-        }
-        
+
     connections:
-        vlCnodeQueue.devicePort <--> device.queuePort;
-        for i=0..sizeof(transmitterPort)-1 {
-    		transmitterPort[i] <--> vlCnodeQueue.queuePort++;
-        }
+        transmitterPort <--> device.controllerPort;
 }

@@ -14,28 +14,42 @@
 //
 
 enum VLCmsgType{
-    VLC_MOVE_MSG = 0;
-    
-    VLC_SIG_BEGIN_MSG = 1;
-    VLC_SIG_END_MSG = 2;
-    
-    VLC_CTRL_MSG = 3;
-    VLC_DATA_MSG = 4;
-    
-    VLC_NOISE_MSG = 5;
+    VLC_CTRL_MSG = 0;
+    VLC_DATA_MSG = 1;
+    VLC_MAC_MSG = 2;
 };
 
 enum VLCctrlCode{
 	// Codes for the status of the transmission
-	TRANSMISSION_DONE = 0;
-	TRANSMISSION_ABORTED = 1;
+	TRANSMISSION_BEGIN = 0;
+    TRANSMISSION_END = 1;
+	TRANSMISSION_ABORT = 2;
+    
 		
 	// Codes for the status of the device		
-	DEVICE_BUSY = 2; 
+	DEVICE_BUSY = 3; 
+	DEVICE_MOVED = 4;
+	NOISE_DEVICE_CHANGED = 5;
 	
 	// Codes for controlling the transmission
-	ABORT_TRANSMISSION = 3;
+	ABORT_TRANSMISSION = 6;
+	
+	// Codes for controlling the transmission
+	VPPM_CYCLE_DOWN = 7;
+	
+	// Codes for the app
+	NEW_PACKET = 8;
+	
+	//Codes for the receiver
+	CHECK_BEACON = 9;
+	
 };
+
+enum VLCMACCode{
+    BEACON_MSG = 0;
+    SUBSCRIBE_MSG = 1;
+    UNSUBSCRIBE_MSG = 2;
+}
 
 enum VLCmodulationType{
     PAM = 0;
@@ -46,29 +60,30 @@ packet VLCpacket{
 	int messageType @enum(VLCmsgType);
 };
 
-packet VLCmoveMsg extends VLCpacket{
-    int nodeId;
-};
-
-packet VLCchannelSignalBegin extends VLCpacket{
-    int nodeId;
-};
-
-packet VLCchannelSignalEnd extends VLCpacket{
-    int nodeId;
-};
-
-packet VLCnoiseMsg extends VLCpacket{
-    int nodeId;
-};
-
 packet VLCctrlMsg extends VLCpacket{
+    int nodeId;
+    int nodeAddress;
     int ctrlCode @enum(VLCctrlCode);
 };
 
 packet VLCnoiseControlMsg extends VLCctrlMsg{
     double noisePower;
 };
+
+packet VLCMACMsg extends VLCpacket{
+    int MACCode @enum(VLCMACCode);
+    int transmitterNodeId;
+    int transmitterNodeAddress;
+    int receiverNodeIde;
+    int receiverNodeAddress;
+};
+
+packet VLCBeaconMsg extends VLCMACMsg{
+    int modulationType @enum(VLCmodulationType);
+    double transmissionPower;
+    int modulationOrder;
+    double dutyCycle;
+}
 
 packet dataPacket extends VLCpacket{
     int modulationType @enum(VLCmodulationType);
@@ -77,5 +92,7 @@ packet dataPacket extends VLCpacket{
     double dutyCycle;
 	string content;
 	double transmissionStartTime;
+	int sourceAddress;
+	int destinationAddress;
 };
     

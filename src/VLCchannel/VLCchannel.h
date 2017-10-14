@@ -37,7 +37,7 @@ namespace VLC{
 
         // Holds all the VLCdevices currently in the network
         std::set <VLC::VLCdevice*> VLCdevices;
-        std::map <VLC::VLCdevice*, dataPacket*> transmitterMessages;
+        std::map <VLC::VLCdevice*, VLCpacket*> transmitterMessages;
 
         // Holds all connections between a transmitter and receiver currently active
         mutable std::set <VLC::VLCconnection> VLCconnections;
@@ -65,6 +65,8 @@ namespace VLC{
         void startTransmission(VLCdevice * transmitter);
         // Signal the channel that the transmitter has stopped transmitting
         void endTransmission(VLCdevice* transmitter);
+        // Signal the channel that the device has abruptly stopped transmitting
+        void abortTransmission(VLCdevice* transmitter);
 
         // Returns the connection between the devices if it exists, NULL otherwise
         VLC::VLCconnection* connectionExists(VLCdevice * transmitter, VLCdevice * receiver);
@@ -72,9 +74,7 @@ namespace VLC{
         int createConnection(VLCdevice * transmitter, VLCdevice * receiver);
         // Terminates the connection between the tx and rx because the tx has sent the VLCchannelSignalEnd
         int dropConnection(VLCdevice * transmitter, VLCdevice * receiver);
-        // Aborts the connection between tx and rx because the devices are no longer able to communicate
-        // this can be because they are too far apart or no longer in their respective FoVs
-        int abortConnection(VLCdevice * transmitter, VLCdevice * receiver);
+
 
 
     public:
@@ -92,6 +92,10 @@ namespace VLC{
 
         // Notifies the channel that the device has changed
         void notifyChange(VLCdevice * device);
+
+        // Aborts the connection between tx and rx because the devices are no longer able to communicate
+        // this can be because they are too far apart or no longer in their respective FoVs
+        int abortConnection(VLCdevice * transmitter, VLCdevice * receiver);
 
         VLCdevViewInfo getDevViewInfo(VLCdevice * transmitter, VLCdevice * receiver);
     };

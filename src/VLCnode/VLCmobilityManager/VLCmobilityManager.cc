@@ -6,7 +6,6 @@
  */
 
 #include <VLCmobilityManager.h>
-#include <VLCmobilityMsg_m.h>
 #include <VLCpacket_m.h>
 #include <VLCchannel.h>
 #include <math.h>
@@ -73,7 +72,9 @@ const VLC::VLCnodePosition VLC::VLCmobilityManager::getNodePosition() const {
 
 void VLC::VLCmobilityManager::notifyChannel() {
     // Notify the channel of the change
-    VLCmoveMsg *moveMessage = new VLCmoveMsg("Node: has moved!");
+    VLCctrlMsg *moveMessage = new VLCctrlMsg("Node: has moved!");
+    moveMessage->setMessageType(VLC_CTRL_MSG);
+    moveMessage->setCtrlCode(DEVICE_MOVED);
     moveMessage->setNodeId(this->device->getId());
     send(moveMessage, gate("channelPort"));
 }
@@ -151,6 +152,10 @@ void VLC::VLCmobilityManager::stepMovement() {
 
     ev<<"Current position : ";
     printPosition(this->nodePosition);
+
+    /*if( this->device->getDeviceType() == RECEIVER_DEVICE ){
+        ((VLCreceiver*) this->device)->resetThroughput();
+    }*/
 
     this->notifyChannel();
 

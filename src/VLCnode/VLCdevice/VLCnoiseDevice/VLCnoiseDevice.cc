@@ -30,8 +30,9 @@ void VLC::VLCnoiseDevice::handleMessage(cMessage *msg){
 // Sets the noise power level to the specified value in dBm
 void VLC::VLCnoiseDevice::setNoisePower(double noisePower) {
     this->currentTransmissionInfo[TRANSMISSION_POWER] = noisePower;
-    VLCnoiseMsg * noiseMsg = new VLCnoiseMsg();
-    noiseMsg->setMessageType(VLC_NOISE_MSG);
+    VLCctrlMsg * noiseMsg = new VLCctrlMsg();
+    noiseMsg->setMessageType(VLC_CTRL_MSG);
+    noiseMsg->setCtrlCode(NOISE_DEVICE_CHANGED);
     noiseMsg->setNodeId(this->getId());
     send(noiseMsg, "channelPort$o");
 }

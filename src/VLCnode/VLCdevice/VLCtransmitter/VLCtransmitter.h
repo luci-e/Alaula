@@ -15,9 +15,15 @@
 #include <string>
 
 namespace VLC{
+    enum transmitterState : int{
+        BUSY = 0,
+        READY = 1
+    };
+
     class VLCtransmitter : public VLCdevice, public VLCemitter{
         protected:
             dataPacket lastPacket;
+            double maxTransmissionPower;
 
             // A set holding the connection this transmitter is currently in
             mutable std::set<VLC::VLCconnection*> connectionStarts;
@@ -25,18 +31,24 @@ namespace VLC{
             void initialize() override;
             void handleMessage(cMessage *msg) override;
 
-            void startTransmission(dataPacket *dataPacket);
+            void startTransmission(VLCpacket *packet);
             void stopTransmission();
+            void abortTransmission();
 
             double getTransmissionTime(double packetLength, double dataRate);
             double getDataRate();
 
+            void updateMyConnections();
+
         public:
+            int address;
+
             VLCtransmitter(){};
             ~VLCtransmitter() {}
 
             void addConnectionStart(VLCconnection * connection);
             void removeConnectionStart(VLCconnection* connection);
+
             std::set<VLC::VLCconnection*>& getConnectionStarts();
 };
     Define_Module(VLCtransmitter);

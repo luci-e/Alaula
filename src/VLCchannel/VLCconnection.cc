@@ -18,6 +18,7 @@
 #include <VLCemitter.h>
 #include <VLCcommons.h>
 #include <Log.h>
+#include <omnetpp.h>
 
 namespace VLC {
 
@@ -32,6 +33,7 @@ VLCconnection::VLCconnection(VLCdevice *  transmitter, VLCdevice *  receiver, VL
 
         this->connGainConstantPart = (( this->transmitter->getLambertianOrder() + 1.0 ) * this->receiver->getPhotoDetectorArea()) / ( 2.0 * M_PI );
         //ev<<"LambertianOrder: "<<this->transmitter->getLambertianOrder()<<" PhotoDetectorArea: "<<this->receiver->getPhotoDetectorArea()<<"\n";
+
         this->transmissionInfo = this->transmitter->getCurrentTransmissionInfo();
     }
 }
@@ -44,9 +46,12 @@ void VLCconnection::calculateNextValue() {
             << viewInfo.device2 << ";"\
             << simTime().dbl() << ";"\
             << "PositionSINRdB" << ";"\
+            << this->receiver->getNodePosition().x << ";"\
             << this->receiver->getNodePosition().y << ";"\
-            << SINRdB << ";"\
-            << 0;
+            << this->receiver->getNodePosition().z << ";"\
+            << viewInfo.angle1<<";"\
+            << viewInfo.angle2<<";"\
+            << SINRdB;
 }
 
 // Updates the values used to calculate the SINR
@@ -56,20 +61,28 @@ void VLCconnection::updateConnection() const{
     //ev<<"Distance is now "<<viewInfo.distance<<"\n";
     // TODO: Find the function for the optical filter gain and put it as part of the equation!
     this->connectionGain = (this->connGainConstantPart / (viewInfo.distance * viewInfo.distance)) * std::pow(cos(viewInfo.angle1), transmitter->getLambertianOrder()) * 1.0 * this->receiver->opticalGain(viewInfo.angle2) * cos(viewInfo.angle2);
-    double receivedSignalPower = this->connectionGain * std::pow(10.0, ((this->transmissionInfo[TRANSMISSION_POWER]) - 30) / 10.0);
+    double receivedSignalPower = this->connectionGain * this->transmitter->getEmitterPower();
+    ev<<"Transmitter powah is now: "<<this->transmitter->getEmitterPower()<<"\n";
+
     // TODO: magic responsivity number
-    double signal =  ((receivedSignalPower * 0.003) * (receivedSignalPower * 0.003));
+    double responsivity = 0.54;
+    double signal =  ((receivedSignalPower * responsivity) * (receivedSignalPower * responsivity));
     double noisePlusInterference = this->receiver->getNoiseVariance(receivedSignalPower) + this->totalNoisePower;
 
     //ev<<"Received signal power is "<<receivedSignalPower<<"\n";
     //ev<<"Noise variance is "<<this->receiver->getNoiseVariance(receivedSignalPower)<<"\n";
 
-    this->SINRdB = 10.0 * log10(signal / noisePlusInterference);
-
-    ev<<"Connection between "<<this->transmitter->getId()<<" and "<<this->receiver->getId()<<"\n";
-    ev<<"ReceivedPower: "<<this->connectionGain * this->transmissionInfo[TRANSMISSION_POWER]<<\
-        "\nSINRdB: "<<this->SINRdB<<"\n";
-    printDevViewInfo(this->lastView);
+    this->SINRdB = 10 * std::log10(signal / noisePlusInterference);
+    if(this->SINRdB < this->SINRthreshold){
+        ev<<"Current transmitter for "<<this->receiver->address<<" is : "<<this->receiver->currentTransmitterAddress;
+        if(this->receiver->currentTransmitterAddress == this->transmitter->address){
+            this->receiver->signalSINRThreshold();
+        }
+        this->channel->abortConnection(this->transmitter, this->receiver);
+    }else{
+        ev<<"Connection between "<<this->transmitter->getId()<<" and "<<this->receiver->getId()<<" SINRdB is : "<<this->SINRdB<<"\n";
+        printDevViewInfo(this->lastView);
+    }
 }
 
 // A connection equals another iff the transmitter and receiver are the same
@@ -101,7 +114,7 @@ bool VLCconnection::getOutcome() {
 
 // Abort this connection
 void VLCconnection::abortConnection() const{
-    ev<<"oh noes!\n";
+    ev<<"Connection between "<<this->transmitter->getId()<<" and "<<this->receiver->getId()<<" aborted\n";
 }
 
 // Adds a noise source that can be another transmitter or an actual noise source
@@ -146,8 +159,10 @@ void VLCconnection::updateNoiseSource(VLCdevice* noiseSource) const{
     VLCdevViewInfo viewInfo = this->channel->getDevViewInfo(noiseSource, this->receiver);
     noiseSourceInfo.sourceGain = (noiseSourceInfo.gainConstantPart / (viewInfo.distance * viewInfo.distance)) * std::pow(cos(viewInfo.angle1), lambertianOrder) * 1.0 * this->receiver->opticalGain(viewInfo.angle2) * cos(viewInfo.angle2);
 
-    double receivedSignalPower = noiseSourceInfo.sourceGain  * std::pow(10.0, (emitterPower - 30) / 10.0);
-    noiseSourceInfo.signalPower = ((receivedSignalPower * 0.003) * (receivedSignalPower * 0.003));
+    double receivedSignalPower = noiseSourceInfo.sourceGain  * emitterPower;
+
+    double responsivity = 0.54;
+    noiseSourceInfo.signalPower = ((receivedSignalPower * responsivity) * (receivedSignalPower * responsivity)) + this->receiver->getShotNoiseVariance(receivedSignalPower);
 
     this->noiseSources[noiseSource] = noiseSourceInfo;
     this->calculateTotalNoise();

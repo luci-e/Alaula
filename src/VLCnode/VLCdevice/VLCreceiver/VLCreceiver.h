@@ -12,18 +12,21 @@
 
 namespace VLC{
     class VLCreceiver : public VLCdevice{
-
-
         protected:
             double photoDetectorArea;
             double refractiveIndex;
             double noiseVariance;
 
             void initialize() override;
+
+
             void handleMessage(cMessage *msg) override;
 
 
         public:
+            int address;
+            int currentTransmitterAddress = -1;
+
             VLCreceiver(){};
             ~VLCreceiver(){};
 
@@ -37,10 +40,15 @@ namespace VLC{
             double getRefractiveIndex() const;
             double getNoiseVariance(double Pr) const;
             double opticalGain(double psi) const;
+            double getShotNoiseVariance(double Pr) const;
+
+            void signalSINRThreshold();
 
             void addConnectionEnd( VLCconnection * connection);
             void removeConnectionEnd( VLCconnection * connection);
             std::set<VLC::VLCconnection*>& getConnectionEnds();
+
+            void resetThroughput();
 };
     Define_Module(VLCreceiver);
 }

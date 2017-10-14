@@ -42,7 +42,7 @@ double VLC::averageSINR(std::vector<VLC::VLCtimeSINR> & SINRTrend){
     for(; val != SINRTrend.end(); val++){
         //ev<<"SINR: "<<val->SINR<<"time: "<<val->time<<"\n";
         double diff = ( val->time - lastTime);
-        totalSINR += val->SINR * diff;
+        totalSINR += std::pow( 10.0, (val->SINR)/10.0) * diff;
         totalTime += diff;
         lastTime = val->time;
     }
@@ -61,7 +61,7 @@ double VLC::BERVPPM(VLCconnection * conn) {
 
     double BER;
 
-    double avgSINR = averageSINR(conn->getSINRTrend());
+    double avgSINR = 10*log10( averageSINR(conn->getSINRTrend()) );
 
     if(avgSINR >= 0 ){
 
@@ -81,14 +81,17 @@ double VLC::BERVPPM(VLCconnection * conn) {
 
     VLCdevViewInfo viewInfo = conn->getLastView();
 
-    LOGN << conn->getConnectionId() << ";"\
+    LOGN_(1) << conn->getConnectionId() << ";"\
             << viewInfo.device1 << ";"\
             << viewInfo.device2 << ";"\
             << simTime().dbl() << ";"\
-            << "PositionBER"<<";"\
+            << "PositionBER" << ";"\
+            << conn->receiver->getNodePosition().x << ";"\
             << conn->receiver->getNodePosition().y << ";"\
-            << log10(BER) << ";"\
-            << 0;
+            << conn->receiver->getNodePosition().z << ";"\
+            << viewInfo.angle1<<";"\
+            << viewInfo.angle2<<";"\
+            << log10(BER);
 
     return BER;
 }
